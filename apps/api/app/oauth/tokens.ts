@@ -73,8 +73,8 @@ function encryptionKey(): Uint8Array {
   return new Uint8Array(createHash('sha256').update(config.tokenSecret).digest())
 }
 
-async function seal(payload: Record<string, unknown>, ttlSeconds: number): Promise<string> {
-  return new EncryptJWT(payload)
+async function seal(payload: object, ttlSeconds: number): Promise<string> {
+  return new EncryptJWT(payload as Record<string, unknown>)
     .setProtectedHeader({ alg: 'dir', enc: 'A256GCM' })
     .setIssuedAt()
     .setIssuer(ISSUER)

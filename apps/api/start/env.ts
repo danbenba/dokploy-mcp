@@ -21,4 +21,7 @@ export default await Env.create(new URL('../', import.meta.url), {
   ALLOW_INSECURE_DOKPLOY: Env.schema.boolean.optional(),
   BRAND_NAME: Env.schema.string.optional(),
   API_KEY_LABEL: Env.schema.string.optional(),
+
+  RATE_LIMIT_WINDOW_MS: Env.schema.number.optional(),
+  RATE_LIMIT_MAX: Env.schema.number.optional(),
 })
