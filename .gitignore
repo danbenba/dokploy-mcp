@@ -1,9 +1,8 @@
 node_modules/
+build/
 dist/
+tmp/
 .env
-.env.local
 *.log
 .DS_Store
 coverage/
-.vite/
-.turbo/
