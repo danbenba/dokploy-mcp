@@ -84,10 +84,14 @@ test.group('mcp tool exposure follows granted scopes', () => {
       'deployment_logs',
       'api_find',
     ])
+    assert.includeMembers(tools, ['list_mounts', 'list_schedules', 'list_backups'])
     assert.notInclude(tools, 'create_project')
     assert.notInclude(tools, 'service_action')
     assert.notInclude(tools, 'delete_project')
     assert.notInclude(tools, 'add_domain')
+    assert.notInclude(tools, 'add_mount')
+    assert.notInclude(tools, 'publish_port')
+    assert.notInclude(tools, 'create_schedule')
   })
 
   test('a deploy connection gains lifecycle tools but not creation', async ({ client, assert }) => {
@@ -99,9 +103,12 @@ test.group('mcp tool exposure follows granted scopes', () => {
       'configure_app_build',
       'cancel_deployment',
       'update_domain',
+      'run_schedule',
+      'run_backup',
     ])
     assert.notInclude(tools, 'create_project')
     assert.notInclude(tools, 'delete_project')
+    assert.notInclude(tools, 'create_schedule')
   })
 
   test('a create connection gains resource creation tools', async ({ client, assert }) => {
@@ -114,14 +121,31 @@ test.group('mcp tool exposure follows granted scopes', () => {
       'create_database',
       'add_domain',
       'deploy_template',
+      'add_mount',
+      'publish_port',
+      'add_redirect',
+      'add_basic_auth',
+      'create_schedule',
+      'create_backup_destination',
+      'schedule_backup',
     ])
     assert.notInclude(tools, 'delete_project')
     assert.notInclude(tools, 'service_action')
+    assert.notInclude(tools, 'run_schedule')
   })
 
   test('only a delete connection exposes destructive tools', async ({ client, assert }) => {
     const tools = await listTools(client, ['read', 'delete'])
-    assert.includeMembers(tools, ['delete_project', 'delete_service', 'delete_domain'])
+    assert.includeMembers(tools, [
+      'delete_project',
+      'delete_service',
+      'delete_domain',
+      'delete_mount',
+      'delete_published_port',
+      'delete_redirect',
+      'delete_basic_auth',
+      'delete_schedule',
+    ])
   })
 
   test('an admin connection sees the whole tool surface', async ({ client, assert }) => {
@@ -139,7 +163,12 @@ test.group('mcp tool exposure follows granted scopes', () => {
       'container_action',
       'dokploy_api',
       'playbook',
+      'add_mount',
+      'add_redirect',
+      'create_schedule',
+      'schedule_backup',
     ])
+    assert.isAbove(tools.length, 40)
   })
 
   test('every exposed tool documents itself for the model', async ({ client, assert }) => {
