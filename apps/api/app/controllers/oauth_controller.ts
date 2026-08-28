@@ -7,7 +7,7 @@ import {
   RegistrationError,
   resolveClient,
 } from '#oauth/clients'
-import { formatScopeParam, parseScopeParam } from '#oauth/scopes'
+import { formatScopeParam, parseScopeParam } from '@dokploy-mcp/core'
 import {
   createFlowPayload,
   openCode,

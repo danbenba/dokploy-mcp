@@ -1,8 +1,6 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import config from '#config/dokploy_mcp'
-import { ALL_SCOPES } from '#oauth/scopes'
-import { catalogCount, catalogVersion } from '#mcp/catalog'
-import { SERVER_NAME, SERVER_VERSION } from '#mcp/server'
+import { ALL_SCOPES, SERVER_NAME, SERVER_VERSION, catalogCount, catalogVersion } from '@dokploy-mcp/core'
 
 export default class MetadataController {
   async authorizationServer({ response }: HttpContext) {

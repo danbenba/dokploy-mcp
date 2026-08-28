@@ -1,7 +1,6 @@
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js'
 import type { HttpContext } from '@adonisjs/core/http'
-import DokployClient from '#services/dokploy/client'
-import { createMcpServer } from '#mcp/server'
+import { DokployClient, createMcpServer } from '@dokploy-mcp/core'
 
 export default class McpController {
   async handle({ request, response, mcpAccess }: HttpContext) {

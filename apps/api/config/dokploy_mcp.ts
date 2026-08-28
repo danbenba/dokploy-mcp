@@ -1,22 +1,7 @@
 import env from '#start/env'
+import { normalizeBaseUrl } from '@dokploy-mcp/core'
 
-export function normalizeBaseUrl(input: string): string {
-  let candidate = input.trim()
-  if (!/^https?:\/\//i.test(candidate)) {
-    candidate = `https://${candidate}`
-  }
-  const parsed = new URL(candidate)
-  parsed.hash = ''
-  parsed.search = ''
-  parsed.username = ''
-  parsed.password = ''
-  let pathname = parsed.pathname.replace(/\/+$/, '')
-  if (pathname.endsWith('/api')) {
-    pathname = pathname.slice(0, -4)
-  }
-  parsed.pathname = pathname
-  return parsed.toString().replace(/\/+$/, '')
-}
+export { normalizeBaseUrl } from '@dokploy-mcp/core'
 
 const publicUrl = (env.get('PUBLIC_URL') ?? `http://localhost:${env.get('PORT')}`).replace(/\/+$/, '')
 const webUrl = (env.get('WEB_URL') ?? publicUrl).replace(/\/+$/, '')
