@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
-import { allows, requireScope, type McpContext } from '#mcp/context'
-import { summarizeEnvironment, summarizeProject, textResult } from '#mcp/helpers'
+import { allows, requireScope, type McpContext } from '../context.js'
+import { summarizeEnvironment, summarizeProject, textResult } from '../helpers.js'
 
 export function register(server: McpServer, context: McpContext): void {
   server.registerTool(

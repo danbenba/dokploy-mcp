@@ -1,8 +1,8 @@
 import { randomBytes } from 'node:crypto'
 import { z } from 'zod'
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
-import { allows, requireScope, type McpContext } from '#mcp/context'
-import { DB_ROUTERS, DEFAULT_DB_IMAGES, INTERNAL_PORTS, pick, textResult } from '#mcp/helpers'
+import { allows, requireScope, type McpContext } from '../context.js'
+import { DB_ROUTERS, DEFAULT_DB_IMAGES, INTERNAL_PORTS, pick, textResult } from '../helpers.js'
 
 const DB_TYPES = ['postgres', 'mysql', 'mariadb', 'mongo', 'redis', 'libsql'] as const
 

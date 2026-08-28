@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
-import { allows, requireScope, type McpContext } from '#mcp/context'
-import { pick, textResult } from '#mcp/helpers'
+import { allows, requireScope, type McpContext } from '../context.js'
+import { pick, textResult } from '../helpers.js'
 
 const DOMAIN_KEYS = [
   'domainId',
