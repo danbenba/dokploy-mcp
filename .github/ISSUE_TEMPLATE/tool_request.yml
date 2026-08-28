@@ -1,0 +1,39 @@
+name: Tool or capability request
+description: Something you want to ask your assistant to do that it cannot do yet
+labels: [enhancement]
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: What would you ask the assistant?
+      placeholder: Schedule a nightly backup of my postgres database to S3.
+    validations:
+      required: true
+
+  - type: textarea
+    id: today
+    attributes:
+      label: What happens today
+      description: Does a tool exist but behave wrongly, or is the capability missing entirely?
+    validations:
+      required: true
+
+  - type: input
+    id: endpoint
+    attributes:
+      label: Dokploy endpoint, if you know it
+      placeholder: /backup.create
+    description: Run api_find in your assistant to discover it, then paste the path here.
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Which permission should it need?
+      options:
+        - read
+        - deploy
+        - create
+        - delete
+        - admin
+    validations:
+      required: true
