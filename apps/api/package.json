@@ -30,7 +30,6 @@
     "#start/*": "./start/*.js",
     "#tests/*": "./tests/*.js",
     "#config/*": "./config/*.js",
-    "#mcp/*": "./app/mcp/*.js",
     "#oauth/*": "./app/oauth/*.js"
   },
   "devDependencies": {
@@ -56,7 +55,8 @@
     "@modelcontextprotocol/sdk": "^1.30.0",
     "jose": "^6.2.10",
     "reflect-metadata": "^0.2.2",
-    "zod": "^4.4.3"
+    "zod": "^4.4.3",
+    "@dokploy-mcp/core": "*"
   },
   "hotHook": {
     "boundaries": [
