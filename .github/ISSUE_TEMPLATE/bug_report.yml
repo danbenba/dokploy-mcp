@@ -1,0 +1,59 @@
+name: Bug report
+description: Something in the connector, the server or the npm package does not behave as documented
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Never paste an API key, an access token or a password. Redact them before submitting.
+
+  - type: dropdown
+    id: mode
+    attributes:
+      label: How are you connecting?
+      options:
+        - Hosted connector at mcp.dokploy.rest
+        - Self-hosted server
+        - npm package over stdio
+    validations:
+      required: true
+
+  - type: input
+    id: assistant
+    attributes:
+      label: Assistant
+      placeholder: Claude Code, Claude Desktop, claude.ai, ChatGPT
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you asked for, what the assistant did, and what you expected instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Added the connector
+        2. Asked to deploy a repository
+        3. The deployment tool answered with ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant output
+      description: Tool errors, server logs or the failing request. Redact secrets.
+      render: text
+
+  - type: input
+    id: dokploy-version
+    attributes:
+      label: Dokploy version
+      placeholder: v0.30.0
