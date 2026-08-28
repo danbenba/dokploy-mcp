@@ -1,0 +1,11 @@
+dokploy-mcp
+Copyright 2026 danbenba
+
+This project is an independent open-source MCP bridge for Dokploy and is not
+affiliated with or endorsed by Dokploy Technology, Inc.
+
+The authorization UI reproduces the look and feel of the Dokploy panel.
+UI components are derived from shadcn/ui (MIT) as vendored by the Dokploy
+project (https://github.com/dokploy/dokploy, Apache License 2.0). The Dokploy
+logo and name are the property of Dokploy Technology, Inc. and are used solely
+to identify the third-party Dokploy instance the user connects to.
