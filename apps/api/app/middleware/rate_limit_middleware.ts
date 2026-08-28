@@ -8,8 +8,8 @@ interface Bucket {
 }
 
 const buckets = new Map<string, Bucket>()
-const WINDOW_MS = env.get('RATE_LIMIT_WINDOW_MS', 60_000)
-const MAX_REQUESTS = env.get('RATE_LIMIT_MAX', 60)
+const WINDOW_MS = Number(env.get('RATE_LIMIT_WINDOW_MS') ?? 60_000)
+const MAX_REQUESTS = Number(env.get('RATE_LIMIT_MAX') ?? 60)
 
 function prune(now: number): void {
   if (buckets.size < 5_000) {
