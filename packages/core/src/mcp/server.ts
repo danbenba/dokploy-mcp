@@ -1,6 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import type { McpContext } from './context.js'
 import * as applications from './tools/applications.js'
+import * as automation from './tools/automation.js'
 import * as compose from './tools/compose.js'
 import * as databases from './tools/databases.js'
 import * as deployments from './tools/deployments.js'
@@ -8,6 +9,8 @@ import * as domains from './tools/domains.js'
 import * as infrastructure from './tools/infrastructure.js'
 import * as meta from './tools/meta.js'
 import * as projects from './tools/projects.js'
+import * as routing from './tools/routing.js'
+import * as storage from './tools/storage.js'
 
 export const SERVER_NAME = 'dokploy'
 export const SERVER_VERSION = '0.1.0'
@@ -43,6 +46,9 @@ export function createMcpServer(context: McpContext): McpServer {
     domains,
     deployments,
     infrastructure,
+    storage,
+    routing,
+    automation,
   ]) {
     module.register(server, context)
   }
