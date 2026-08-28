@@ -19,8 +19,25 @@ import { ApiError, api, type FlowState } from '@/lib/api'
 
 const STEP_DELAY = 420
 
+const FAILING_STEP: Record<string, number> = {
+  invalid_url: 0,
+  insecure: 0,
+  private_address: 0,
+  dns: 0,
+  unreachable: 1,
+  not_dokploy: 2,
+}
+
 function initialSteps(status: StepStatus = 'pending'): VerificationStep[] {
   return VERIFICATION_STEPS.map((step) => ({ ...step, status }))
+}
+
+function stepsAfterFailure(code: string): VerificationStep[] {
+  const failed = FAILING_STEP[code] ?? 2
+  return VERIFICATION_STEPS.map((step, index) => ({
+    ...step,
+    status: index < failed ? 'done' : index === failed ? 'failed' : 'pending',
+  }))
 }
 
 export function LoginPage() {
@@ -112,13 +129,7 @@ export function LoginPage() {
         setInstanceUrl(state.verified.url)
       }
     } catch (cause) {
-      setSteps((current) =>
-        current.map((step) =>
-          step.status === 'running' || step.status === 'pending'
-            ? { ...step, status: 'failed' }
-            : step
-        )
-      )
+      setSteps(stepsAfterFailure(cause instanceof ApiError ? cause.code : 'not_dokploy'))
       setError(
         cause instanceof ApiError ? cause.message : 'Could not verify this address. Try again.'
       )
