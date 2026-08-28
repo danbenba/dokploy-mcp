@@ -7,7 +7,7 @@ import {
   hasScope,
   parseScopeParam,
   sanitizeScopes,
-} from '#oauth/scopes'
+} from '@dokploy-mcp/core'
 
 test.group('oauth scopes', () => {
   test('falls back to the default scopes when none are requested', ({ assert }) => {
