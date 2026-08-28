@@ -1,0 +1,44 @@
+services:
+  mcp:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3333
+      APP_KEY: ${APP_KEY:?generate one with openssl rand -base64 32}
+      TOKEN_SECRET: ${TOKEN_SECRET:?generate one with openssl rand -base64 48}
+      PUBLIC_URL: ${PUBLIC_URL:-https://mcp.dokploy.rest}
+      WEB_URL: ${WEB_URL:-https://dokploy.rest}
+      BRAND_NAME: ${BRAND_NAME:-Dokploy MCP}
+      API_KEY_LABEL: ${API_KEY_LABEL:-Dokploy MCP}
+      ACCESS_TOKEN_TTL: ${ACCESS_TOKEN_TTL:-3600}
+      REFRESH_TOKEN_TTL: ${REFRESH_TOKEN_TTL:-2592000}
+      DOKPLOY_LOCKED_URL: ${DOKPLOY_LOCKED_URL:-}
+      ALLOW_PRIVATE_NETWORKS: ${ALLOW_PRIVATE_NETWORKS:-false}
+      ALLOW_INSECURE_DOKPLOY: ${ALLOW_INSECURE_DOKPLOY:-false}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    expose:
+      - '3333'
+    networks:
+      - dokploy-network
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        VITE_MCP_URL: ${PUBLIC_URL:-https://mcp.dokploy.rest}
+    restart: unless-stopped
+    expose:
+      - '80'
+    depends_on:
+      - mcp
+    networks:
+      - dokploy-network
+
+networks:
+  dokploy-network:
+    external: true
