@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
-import { allows, requireScope, type McpContext } from '#mcp/context'
-import { pick, resolveService, textResult } from '#mcp/helpers'
+import { allows, requireScope, type McpContext } from '../context.js'
+import { pick, resolveService, textResult } from '../helpers.js'
 
 const APPLICATION_KEYS = [
   'applicationId',

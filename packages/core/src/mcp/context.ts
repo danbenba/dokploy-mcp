@@ -1,8 +1,8 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
-import type DokployClient from '#services/dokploy/client'
-import type { DokployAccount } from '#services/dokploy/authenticator'
-import type { Scope } from '#oauth/scopes'
-import { hasScope } from '#oauth/scopes'
+import type DokployClient from '../dokploy/client.js'
+import type { DokployAccount } from '../dokploy/authenticator.js'
+import type { Scope } from '../scopes.js'
+import { hasScope } from '../scopes.js'
 
 export interface McpContext {
   client: DokployClient

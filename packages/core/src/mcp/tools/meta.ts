@@ -1,9 +1,9 @@
 import { z } from 'zod'
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
-import { catalogCount, catalogVersion, describeEndpoint, findEndpoints } from '#mcp/catalog'
-import { PLAYBOOKS, PLAYBOOK_NAMES, type PlaybookName } from '#mcp/playbooks'
-import { requireScope, type McpContext } from '#mcp/context'
-import { textResult } from '#mcp/helpers'
+import { catalogCount, catalogVersion, describeEndpoint, findEndpoints } from '../catalog.js'
+import { PLAYBOOKS, PLAYBOOK_NAMES, type PlaybookName } from '../playbooks.js'
+import { requireScope, type McpContext } from '../context.js'
+import { textResult } from '../helpers.js'
 
 export function register(server: McpServer, context: McpContext): void {
   server.registerTool(
