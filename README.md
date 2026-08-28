@@ -19,6 +19,9 @@ assistant works through Dokploy's own HTTP API, with the permissions you granted
 | Domains | attach hostnames with Let's Encrypt, validate DNS, generate a test domain, update or delete |
 | Deployments | build history, build logs, the global queue, cancel or kill a build |
 | Infrastructure | docker containers, `docker inspect`, remote servers |
+| Storage | volume, bind and file mounts for data that survives a redeploy |
+| Routing | raw TCP and UDP ports, redirects such as www to apex, HTTP basic auth |
+| Automation | cron jobs inside a container, S3 destinations, scheduled database backups |
 | Everything else | `api_find` searches all 554 Dokploy endpoints, `dokploy_api` calls any of them |
 
 Five playbooks ship with the server (`deploy`, `troubleshoot`, `database`, `template`, `domains`)
