@@ -1,8 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto'
 import { EncryptJWT, jwtDecrypt } from 'jose'
 import config from '#config/dokploy_mcp'
-import type { Scope } from '#oauth/scopes'
-import type { DokployAccount } from '#services/dokploy/authenticator'
+import type { DokployAccount, Scope } from '@dokploy-mcp/core'
 
 export interface DokployConnection {
   url: string

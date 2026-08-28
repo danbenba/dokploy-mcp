@@ -5,7 +5,7 @@ import {
   DokployApiError,
   DokployAuthError,
   InstanceVerificationError,
-} from '#services/dokploy/errors'
+} from '@dokploy-mcp/core'
 
 export default class HttpExceptionHandler extends ExceptionHandler {
   protected debug = !app.inProduction

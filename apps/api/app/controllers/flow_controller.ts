@@ -1,7 +1,8 @@
 import { z } from 'zod'
 import type { HttpContext } from '@adonisjs/core/http'
 import config from '#config/dokploy_mcp'
-import { describeScopes, sanitizeScopes, type Scope } from '#oauth/scopes'
+import { DokployAuthError, describeScopes, sanitizeScopes, verifyDokployInstance } from '@dokploy-mcp/core'
+import type { Scope } from '@dokploy-mcp/core'
 import {
   openFlow,
   sealCode,
@@ -10,7 +11,6 @@ import {
   type DokployConnection,
   type FlowPayload,
 } from '#oauth/tokens'
-import { verifyDokployInstance } from '#services/dokploy/verifier'
 import {
   createApiKeyWithSession,
   fetchAccountWithApiKey,
@@ -18,8 +18,7 @@ import {
   signInWithEmail,
   verifyBackupCode,
   verifyTotpCode,
-} from '#services/dokploy/authenticator'
-import { DokployAuthError, InstanceVerificationError } from '#services/dokploy/errors'
+} from '@dokploy-mcp/core'
 
 const flowSchema = z.object({ flow: z.string().min(10) })
 const verifySchema = flowSchema.extend({ url: z.string().min(3).max(255) })
@@ -259,4 +258,4 @@ export default class FlowController {
   }
 }
 
-export { DokployAuthError, InstanceVerificationError, TokenError }
+export { TokenError }
