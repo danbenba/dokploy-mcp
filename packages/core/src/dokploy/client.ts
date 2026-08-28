@@ -1,4 +1,4 @@
-import { DokployApiError, extractErrorMessage } from '#services/dokploy/errors'
+import { DokployApiError, extractErrorMessage } from './errors.js'
 
 export interface DokployClientOptions {
   baseUrl: string

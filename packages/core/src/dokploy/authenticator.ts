@@ -1,4 +1,4 @@
-import { DokployAuthError, extractErrorMessage } from '#services/dokploy/errors'
+import { DokployAuthError, extractErrorMessage } from './errors.js'
 
 export interface DokployAccount {
   name: string
