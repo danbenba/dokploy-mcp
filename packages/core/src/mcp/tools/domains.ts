@@ -176,7 +176,8 @@ export function register(server: McpServer, context: McpContext): void {
       'delete_domain',
       {
         title: 'Delete a domain',
-        description: 'Detach and delete a domain from its service.',
+        description:
+        'Detach and delete a domain from its service. Traefik stops routing that hostname immediately, and any certificate issued for it is released.',
         inputSchema: {
           domain_id: z.string().min(1),
         },
