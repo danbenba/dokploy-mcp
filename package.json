@@ -5,14 +5,16 @@
   "license": "Apache-2.0",
   "type": "module",
   "workspaces": [
-    "apps/*"
+    "apps/*",
+    "packages/*"
   ],
   "scripts": {
-    "build": "npm run build -w apps/mcp && npm run build -w apps/web",
+    "build": "npm run build -w packages/core && npm run build -w apps/web",
     "dev:mcp": "npm run dev -w apps/mcp",
     "dev:web": "npm run dev -w apps/web",
     "test": "npm run test -w apps/mcp",
-    "typecheck": "npm run typecheck -w apps/mcp && npm run typecheck -w apps/web"
+    "typecheck": "npm run typecheck -w apps/mcp && npm run typecheck -w apps/web",
+    "build:core": "npm run build -w packages/core"
   },
   "engines": {
     "node": ">=20"
