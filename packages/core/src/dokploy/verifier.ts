@@ -1,7 +1,7 @@
 import { isIP } from 'node:net'
 import { lookup } from 'node:dns/promises'
-import { normalizeBaseUrl } from '#config/dokploy_mcp'
-import { InstanceVerificationError } from '#services/dokploy/errors'
+import { normalizeBaseUrl } from '../url.js'
+import { InstanceVerificationError } from './errors.js'
 
 export interface VerifiedInstance {
   url: string
