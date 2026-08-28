@@ -1,6 +1,5 @@
 import { test } from '@japa/runner'
-import { catalogCount, describeEndpoint, findEndpoints } from '#mcp/catalog'
-import { resolveService, summarizeProject } from '#mcp/helpers'
+import { catalogCount, describeEndpoint, findEndpoints, resolveService, summarizeProject } from '@dokploy-mcp/core'
 
 test.group('dokploy api catalog', () => {
   test('embeds the whole dokploy surface', ({ assert }) => {

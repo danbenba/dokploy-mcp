@@ -1,6 +1,5 @@
 import { test } from '@japa/runner'
-import { isPrivateAddress, verifyDokployInstance } from '#services/dokploy/verifier'
-import { InstanceVerificationError } from '#services/dokploy/errors'
+import { InstanceVerificationError, isPrivateAddress, verifyDokployInstance } from '@dokploy-mcp/core'
 import { normalizeBaseUrl } from '#config/dokploy_mcp'
 
 test.group('private address detection', () => {

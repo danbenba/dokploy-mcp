@@ -1,6 +1,6 @@
 import { test } from '@japa/runner'
 import { sealAccess, type DokployConnection } from '#oauth/tokens'
-import type { Scope } from '#oauth/scopes'
+import type { Scope } from '@dokploy-mcp/core'
 
 const connection: DokployConnection = {
   url: 'https://panel.example.com',
