@@ -41,7 +41,11 @@ async function authFetch(
   path: string,
   options: { method?: 'GET' | 'POST'; body?: unknown; cookies?: string }
 ): Promise<{ response: Response; cookies: string; text: string }> {
-  const headers: Record<string, string> = { accept: 'application/json' }
+  const headers: Record<string, string> = {
+    accept: 'application/json',
+    origin: baseUrl,
+    referer: `${baseUrl}/`,
+  }
   if (options.cookies) {
     headers.cookie = options.cookies
   }
