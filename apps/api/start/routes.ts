@@ -44,3 +44,6 @@ router
 router.post('/mcp', [McpController, 'handle']).use(middleware.mcpAuth())
 router.get('/mcp', [McpController, 'unsupported']).use(middleware.mcpAuth())
 router.delete('/mcp', [McpController, 'unsupported']).use(middleware.mcpAuth())
+
+router.post('/', [McpController, 'handle']).use(middleware.mcpAuth())
+router.delete('/', [McpController, 'unsupported']).use(middleware.mcpAuth())
