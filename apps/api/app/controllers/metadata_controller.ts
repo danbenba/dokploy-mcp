@@ -42,7 +42,19 @@ export default class MetadataController {
     })
   }
 
-  async index({ response }: HttpContext) {
+  async index({ request, response }: HttpContext) {
+    const accept = request.header('accept') ?? ''
+    if (accept.includes('text/event-stream')) {
+      response.header('Allow', 'POST')
+      return response.status(405).json({
+        jsonrpc: '2.0',
+        error: {
+          code: -32000,
+          message: 'This MCP server is stateless: use POST for every JSON-RPC message.',
+        },
+        id: null,
+      })
+    }
     return response.json({
       name: config.brandName,
       description:
