@@ -151,7 +151,7 @@ export function register(server: McpServer, context: McpContext): void {
             endpoint: input.endpoint,
             accessKey: input.access_key,
             secretAccessKey: input.secret_access_key,
-            additionalFlags: '',
+            additionalFlags: [],
           })
         )
       }
