@@ -8,10 +8,15 @@ import {
   resolveClient,
 } from '#oauth/clients'
 import { formatScopeParam, parseScopeParam } from '@dokploy-mcp/core'
+import { randomUUID } from 'node:crypto'
 import {
+  consumeOnce,
   createFlowPayload,
+  isSessionRevoked,
+  openAccess,
   openCode,
   openRefresh,
+  revokeSession,
   sealAccess,
   sealFlow,
   sealRefresh,
@@ -147,15 +152,18 @@ export default class OauthController {
         }
         verifyPkce(payload.codeChallenge, payload.codeChallengeMethod, codeVerifier)
 
+        const sessionId = randomUUID()
         const accessToken = await sealAccess({
           clientId: payload.clientId,
           scopes: payload.scopes,
           connection: payload.connection,
+          sessionId,
         })
         const refreshToken = await sealRefresh({
           clientId: payload.clientId,
           scopes: payload.scopes,
           connection: payload.connection,
+          sessionId,
         })
         return response.json({
           access_token: accessToken,
@@ -176,15 +184,27 @@ export default class OauthController {
         if (clientId && clientId !== payload.clientId) {
           return fail(400, 'invalid_grant', 'This refresh token belongs to another client.')
         }
+        if (isSessionRevoked(payload.sessionId)) {
+          return fail(400, 'invalid_grant', 'This grant has been revoked.')
+        }
+        if (payload.jti && !consumeOnce(`refresh:${payload.jti}`, config.refreshTokenTtl)) {
+          if (payload.sessionId) {
+            revokeSession(payload.sessionId, config.refreshTokenTtl)
+          }
+          return fail(400, 'invalid_grant', 'This refresh token has already been used.')
+        }
+        const sessionId = payload.sessionId ?? randomUUID()
         const accessToken = await sealAccess({
           clientId: payload.clientId,
           scopes: payload.scopes,
           connection: payload.connection,
+          sessionId,
         })
         const refreshToken = await sealRefresh({
           clientId: payload.clientId,
           scopes: payload.scopes,
           connection: payload.connection,
+          sessionId,
         })
         return response.json({
           access_token: accessToken,
@@ -209,7 +229,23 @@ export default class OauthController {
     }
   }
 
-  async revoke({ response }: HttpContext) {
+  async revoke({ request, response }: HttpContext) {
+    const token = firstString((request.body() as Record<string, unknown>).token)
+    if (token) {
+      let sessionId: string | undefined
+      try {
+        sessionId = (await openRefresh(token)).sessionId
+      } catch {
+        try {
+          sessionId = (await openAccess(token)).sessionId
+        } catch {
+          sessionId = undefined
+        }
+      }
+      if (sessionId) {
+        revokeSession(sessionId, config.refreshTokenTtl)
+      }
+    }
     return response.status(200).json({})
   }
 }

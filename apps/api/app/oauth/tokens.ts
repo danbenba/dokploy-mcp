@@ -47,6 +47,7 @@ export interface AccessPayload {
   clientId: string
   scopes: Scope[]
   connection: DokployConnection
+  sessionId?: string
 }
 
 export interface RefreshPayload {
@@ -54,6 +55,8 @@ export interface RefreshPayload {
   clientId: string
   scopes: Scope[]
   connection: DokployConnection
+  sessionId?: string
+  jti?: string
 }
 
 export class TokenError extends Error {
@@ -67,6 +70,46 @@ export class TokenError extends Error {
 }
 
 const ISSUER = 'dokploy-mcp'
+
+const consumedIds = new Map<string, number>()
+const revokedSessions = new Map<string, number>()
+
+function pruneStore(store: Map<string, number>, now: number): void {
+  for (const [key, expiry] of store) {
+    if (expiry <= now) {
+      store.delete(key)
+    }
+  }
+}
+
+export function consumeOnce(id: string, ttlSeconds: number): boolean {
+  const now = Date.now()
+  pruneStore(consumedIds, now)
+  if (consumedIds.has(id)) {
+    return false
+  }
+  consumedIds.set(id, now + ttlSeconds * 1000)
+  return true
+}
+
+export function revokeSession(sessionId: string, ttlSeconds: number): void {
+  const now = Date.now()
+  pruneStore(revokedSessions, now)
+  revokedSessions.set(sessionId, now + ttlSeconds * 1000)
+}
+
+export function isSessionRevoked(sessionId: string | undefined): boolean {
+  if (!sessionId) {
+    return false
+  }
+  pruneStore(revokedSessions, Date.now())
+  return revokedSessions.has(sessionId)
+}
+
+export function resetTokenStores(): void {
+  consumedIds.clear()
+  revokedSessions.clear()
+}
 
 function encryptionKey(): Uint8Array {
   return new Uint8Array(createHash('sha256').update(config.tokenSecret).digest())
@@ -116,8 +159,12 @@ export function sealCode(payload: Omit<CodePayload, 'typ' | 'nonce'>): Promise<s
   return seal({ typ: 'code', nonce: randomUUID(), ...payload }, config.authCodeTtl)
 }
 
-export function openCode(token: string): Promise<CodePayload> {
-  return open<CodePayload>(token, 'code')
+export async function openCode(token: string): Promise<CodePayload> {
+  const payload = await open<CodePayload>(token, 'code')
+  if (!consumeOnce(`code:${payload.nonce}`, config.authCodeTtl)) {
+    throw new TokenError('invalid_grant', 'This authorization code has already been used.')
+  }
+  return payload
 }
 
 export function sealAccess(payload: Omit<AccessPayload, 'typ'>): Promise<string> {

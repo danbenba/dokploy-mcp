@@ -1,7 +1,7 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import type { NextFn } from '@adonisjs/core/types/http'
 import config from '#config/dokploy_mcp'
-import { openAccess, TokenError, type AccessPayload } from '#oauth/tokens'
+import { isSessionRevoked, openAccess, TokenError, type AccessPayload } from '#oauth/tokens'
 
 declare module '@adonisjs/core/http' {
   interface HttpContext {
@@ -27,7 +27,11 @@ export default class McpAuthMiddleware {
     }
 
     try {
-      ctx.mcpAccess = await openAccess(match[1])
+      const access = await openAccess(match[1])
+      if (isSessionRevoked(access.sessionId)) {
+        return challenge('invalid_token', 'This access token has been revoked.')
+      }
+      ctx.mcpAccess = access
     } catch (error) {
       if (error instanceof TokenError) {
         return challenge(
