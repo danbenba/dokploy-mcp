@@ -1,3 +1,4 @@
+import proxyAddr from 'proxy-addr'
 import env from '#start/env'
 import app from '@adonisjs/core/services/app'
 import { Secret } from '@adonisjs/core/helpers'
@@ -10,6 +11,8 @@ export const http = defineConfig({
   allowMethodSpoofing: false,
 
   useAsyncLocalStorage: false,
+
+  trustProxy: proxyAddr.compile(['loopback', 'linklocal', 'uniquelocal']),
 
   cookie: {
     domain: '',
