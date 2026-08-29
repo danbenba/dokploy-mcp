@@ -42,7 +42,8 @@ export function resetRateLimits(): void {
 
 export default class RateLimitMiddleware {
   async handle(ctx: HttpContext, next: NextFn) {
-    const key = `${ctx.request.ip()}:${ctx.request.url()}`
+    const clientIp = ctx.request.header('cf-connecting-ip') ?? ctx.request.ip()
+    const key = `${clientIp}:${ctx.request.url()}`
     const result = consume(key)
     if (!result.allowed) {
       ctx.response.header('Retry-After', String(result.retryAfter))
