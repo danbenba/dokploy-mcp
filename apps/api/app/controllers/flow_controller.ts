@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import type { HttpContext } from '@adonisjs/core/http'
 import config from '#config/dokploy_mcp'
-import { DokployAuthError, describeScopes, sanitizeScopes, verifyDokployInstance } from '@dokploy-mcp/core'
+import { DokployAuthError, describeScopes, isScope, verifyDokployInstance } from '@dokploy-mcp/core'
 import type { Scope } from '@dokploy-mcp/core'
 import {
   openFlow,
@@ -216,8 +216,10 @@ export default class FlowController {
         .json({ error: 'not_authenticated', error_description: 'Sign in to the panel first.' })
     }
 
-    const requested = sanitizeScopes(parsed.data.scopes as string[] | undefined)
-    const granted = requested.filter((scope) => flow.scopes.includes(scope)) as Scope[]
+    const submitted = parsed.data.scopes
+    const requested =
+      submitted === undefined ? flow.scopes : (submitted.filter(isScope) as Scope[])
+    const granted = [...new Set(requested)].filter((scope) => flow.scopes.includes(scope)) as Scope[]
     if (granted.length === 0) {
       return response.status(400).json({
         error: 'invalid_scope',
