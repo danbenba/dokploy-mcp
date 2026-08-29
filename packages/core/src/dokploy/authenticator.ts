@@ -150,22 +150,75 @@ export async function verifyBackupCode(
   return { cookies: result.cookies, twoFactorPending: false }
 }
 
-function pickOrganization(payload: unknown): { id: string | null; name: string | null } {
-  if (!Array.isArray(payload) || payload.length === 0) {
-    return { id: null, name: null }
-  }
-  const first = payload[0] as Record<string, unknown>
-  const id = (first.organizationId ?? first.id) as string | undefined
-  const name = first.name as string | undefined
-  return { id: id ?? null, name: name ?? null }
+interface OrganizationEntry {
+  id: string
+  name: string | null
+  isDefault: boolean
 }
 
-function toAccount(user: Record<string, unknown>, organization: { id: string | null; name: string | null }): DokployAccount {
+function parseOrganizations(payload: unknown): OrganizationEntry[] {
+  if (!Array.isArray(payload)) {
+    return []
+  }
+  const entries: OrganizationEntry[] = []
+  for (const item of payload) {
+    const row = item as Record<string, unknown>
+    const id = (row.organizationId ?? row.id) as string | undefined
+    if (typeof id !== 'string' || id.length === 0) {
+      continue
+    }
+    const members = Array.isArray(row.members) ? (row.members as Record<string, unknown>[]) : []
+    entries.push({
+      id,
+      name: typeof row.name === 'string' ? row.name : null,
+      isDefault: members.some((member) => member.isDefault === true),
+    })
+  }
+  return entries
+}
+
+function pickOrganization(
+  entries: OrganizationEntry[],
+  activeId: string | null
+): { id: string | null; name: string | null } {
+  const active = activeId ? entries.find((entry) => entry.id === activeId) : undefined
+  if (active) {
+    return { id: active.id, name: active.name }
+  }
+  if (activeId) {
+    return { id: activeId, name: null }
+  }
+  const fallback = entries.find((entry) => entry.isDefault) ?? entries[0]
+  return fallback ? { id: fallback.id, name: fallback.name } : { id: null, name: null }
+}
+
+function sanitizeImage(value: unknown): string | null {
+  if (typeof value !== 'string' || value.length === 0 || value.length > 2048) {
+    return null
+  }
+  return value.startsWith('https://') || value.startsWith('http://') ? value : null
+}
+
+function displayName(user: Record<string, unknown>): string {
+  const parts = [user.firstName, user.lastName].filter(
+    (part): part is string => typeof part === 'string' && part.length > 0
+  )
+  if (parts.length > 0) {
+    return parts.join(' ')
+  }
+  return String(user.name ?? user.email ?? 'Dokploy user')
+}
+
+function toAccount(
+  user: Record<string, unknown>,
+  role: string | null,
+  organization: { id: string | null; name: string | null }
+): DokployAccount {
   return {
-    name: String(user.name ?? user.email ?? 'Dokploy user'),
+    name: displayName(user),
     email: String(user.email ?? ''),
-    image: typeof user.image === 'string' ? user.image : null,
-    role: typeof user.role === 'string' ? user.role : null,
+    image: sanitizeImage(user.image),
+    role,
     organizationId: organization.id,
     organizationName: organization.name,
   }
@@ -181,9 +234,15 @@ export async function fetchAccountWithSession(
   }
 
   let user: Record<string, unknown> = {}
+  let activeOrganizationId: string | null = null
   try {
-    const data = JSON.parse(session.text) as { user?: Record<string, unknown> }
+    const data = JSON.parse(session.text) as {
+      user?: Record<string, unknown>
+      session?: Record<string, unknown>
+    }
     user = data.user ?? {}
+    const active = data.session?.activeOrganizationId
+    activeOrganizationId = typeof active === 'string' && active.length > 0 ? active : null
   } catch {
     user = {}
   }
@@ -192,15 +251,16 @@ export async function fetchAccountWithSession(
   }
 
   const organizations = await authFetch(baseUrl, '/api/organization.all', { cookies })
-  let organization = { id: null as string | null, name: null as string | null }
+  let entries: OrganizationEntry[] = []
   if (organizations.response.ok) {
     try {
-      organization = pickOrganization(JSON.parse(organizations.text))
+      entries = parseOrganizations(JSON.parse(organizations.text))
     } catch {
-      organization = { id: null, name: null }
+      entries = []
     }
   }
-  return toAccount(user, organization)
+  const role = typeof user.role === 'string' ? user.role : null
+  return toAccount(user, role, pickOrganization(entries, activeOrganizationId))
 }
 
 export async function createApiKeyWithSession(
@@ -209,9 +269,15 @@ export async function createApiKeyWithSession(
   keyName: string,
   organizationId: string | null
 ): Promise<string> {
-  const body: Record<string, unknown> = { name: keyName.slice(0, 32) }
-  if (organizationId) {
-    body.metadata = { organizationId }
+  if (!organizationId) {
+    throw new DokployAuthError(
+      'api_key_creation_failed',
+      'Could not determine your Dokploy organization.'
+    )
+  }
+  const body: Record<string, unknown> = {
+    name: keyName.slice(0, 32),
+    metadata: { organizationId },
   }
   const { response, text } = await authFetch(baseUrl, '/api/user.createApiKey', {
     method: 'POST',
@@ -265,12 +331,15 @@ export async function fetchAccountWithApiKey(
     throw new DokployAuthError('invalid_api_key', extractErrorMessage(response.status, text))
   }
 
-  let user: Record<string, unknown> = {}
+  let row: Record<string, unknown> = {}
   try {
-    const data = JSON.parse(text) as Record<string, unknown>
-    user = (data.user as Record<string, unknown>) ?? data
+    row = JSON.parse(text) as Record<string, unknown>
   } catch {
-    user = {}
+    row = {}
   }
-  return toAccount(user, { id: null, name: null })
+  const user = (row.user as Record<string, unknown>) ?? row
+  const role =
+    typeof row.role === 'string' ? row.role : typeof user.role === 'string' ? user.role : null
+  const organizationId = typeof row.organizationId === 'string' ? row.organizationId : null
+  return toAccount(user, role, { id: organizationId, name: null })
 }
