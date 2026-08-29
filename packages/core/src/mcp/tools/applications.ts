@@ -288,11 +288,11 @@ export function register(server: McpServer, context: McpContext): void {
           throw new Error(`${router} supports ${valid.join(', ')} but not ${action}.`)
         }
         const params: Record<string, unknown> = { [idParam]: service_id }
-        if (router === 'application' && action === 'reload') {
-          const application = (await context.client.get('/application.one', {
-            applicationId: service_id,
+        if (action === 'reload') {
+          const service = (await context.client.get(`/${router}.one`, {
+            [idParam]: service_id,
           })) as Record<string, unknown>
-          params.appName = application?.appName ?? ''
+          params.appName = service?.appName ?? ''
         }
         return textResult(await context.client.post(`/${router}.${action}`, params))
       }
