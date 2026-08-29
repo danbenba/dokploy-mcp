@@ -58,6 +58,7 @@ export function LoginPage() {
   const [password, setPassword] = useState('')
   const [apiKey, setApiKey] = useState('')
   const [totpCode, setTotpCode] = useState('')
+  const [useBackupCode, setUseBackupCode] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
@@ -164,7 +165,13 @@ export function LoginPage() {
     setError(null)
     setSubmitting(true)
     try {
-      applyState(await api.secondFactor(flowToken, totpCode.replace(/\s/g, ''), 'totp'))
+      applyState(
+        await api.secondFactor(
+          flowToken,
+          totpCode.replace(/\s/g, ''),
+          useBackupCode ? 'backup' : 'totp'
+        )
+      )
     } catch (cause) {
       setError(cause instanceof ApiError ? cause.message : 'Could not verify the code.')
     } finally {
@@ -284,12 +291,12 @@ export function LoginPage() {
         ) : flow.two_factor_pending ? (
           <form onSubmit={onTotp} className="space-y-4" id="totp-form">
             <div className="space-y-2">
-              <Label htmlFor="totp">Authentication code</Label>
+              <Label htmlFor="totp">{useBackupCode ? 'Backup code' : 'Authentication code'}</Label>
               <Input
                 id="totp"
-                inputMode="numeric"
+                inputMode={useBackupCode ? 'text' : 'numeric'}
                 autoComplete="one-time-code"
-                placeholder="123456"
+                placeholder={useBackupCode ? 'Enter a backup code' : '123456'}
                 value={totpCode}
                 onChange={(event) => setTotpCode(event.target.value)}
               />
@@ -298,6 +305,17 @@ export function LoginPage() {
               {submitting ? <Loader2 className="size-4 animate-spin" /> : null}
               Verify
             </Button>
+            <button
+              type="button"
+              className="w-full text-center text-xs text-muted-foreground underline-offset-4 hover:underline"
+              onClick={() => {
+                setUseBackupCode((current) => !current)
+                setTotpCode('')
+                setError(null)
+              }}
+            >
+              {useBackupCode ? 'Use your authenticator app instead' : 'Use a backup code instead'}
+            </button>
           </form>
         ) : (
           <Tabs defaultValue="credentials" className="w-full">
