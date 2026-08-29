@@ -127,14 +127,17 @@ export async function verifyDokployInstance(
   let isCloud = false
   try {
     const response = await probe(`${url}/api/settings.isCloud`, timeoutMs)
-    if (!response.ok) {
+    if (response.status === 401 || response.status === 403) {
+      isCloud = false
+    } else if (response.ok) {
+      const body = (await response.json()) as unknown
+      if (typeof body !== 'boolean') {
+        throw new Error('unexpected body')
+      }
+      isCloud = body
+    } else {
       throw new Error(`status ${response.status}`)
     }
-    const body = (await response.json()) as unknown
-    if (typeof body !== 'boolean') {
-      throw new Error('unexpected body')
-    }
-    isCloud = body
   } catch {
     throw new InstanceVerificationError(
       'not_dokploy',
