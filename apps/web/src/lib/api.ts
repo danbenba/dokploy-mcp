@@ -5,6 +5,11 @@ export interface ScopeDefinition {
   risky: boolean
 }
 
+export interface FlowOrganization {
+  id: string
+  name: string | null
+}
+
 export interface FlowAccount {
   name: string
   email: string
@@ -12,6 +17,7 @@ export interface FlowAccount {
   role: string | null
   organizationId: string | null
   organizationName: string | null
+  organizations: FlowOrganization[]
 }
 
 export interface FlowState {
@@ -82,7 +88,12 @@ export const api = {
   secondFactor: (flow: string, code: string, mode: 'totp' | 'backup') =>
     post<FlowState>('/flow/second-factor', { flow, code, mode }),
   apiKey: (flow: string, apiKey: string) => post<FlowState>('/flow/api-key', { flow, api_key: apiKey }),
-  consent: (flow: string, scopes: string[]) =>
-    post<{ redirect_to: string; granted_scopes: string[] }>('/flow/consent', { flow, scopes }),
+  avatar: (flow: string) => post<{ image: string | null }>('/flow/avatar', { flow }),
+  consent: (flow: string, scopes: string[], organizations?: string[]) =>
+    post<{ redirect_to: string; granted_scopes: string[] }>('/flow/consent', {
+      flow,
+      scopes,
+      ...(organizations ? { organizations } : {}),
+    }),
   deny: (flow: string) => post<{ redirect_to: string }>('/flow/deny', { flow }),
 }
