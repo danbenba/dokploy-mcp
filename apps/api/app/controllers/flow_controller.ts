@@ -8,6 +8,7 @@ import {
   sealCode,
   sealFlow,
   TokenError,
+  type ConnectionOrganization,
   type DokployConnection,
   type FlowPayload,
 } from '#oauth/tokens'
@@ -15,6 +16,8 @@ import {
   createApiKeyWithSession,
   fetchAccountWithApiKey,
   fetchAccountWithSession,
+  fetchAvatarWithApiKey,
+  fetchAvatarWithSession,
   signInWithEmail,
   verifyBackupCode,
   verifyTotpCode,
@@ -31,10 +34,13 @@ const secondFactorSchema = flowSchema.extend({
   mode: z.enum(['totp', 'backup']).optional(),
 })
 const apiKeySchema = flowSchema.extend({ api_key: z.string().min(8).max(400) })
-const consentSchema = flowSchema.extend({ scopes: z.array(z.string()).optional() })
+const consentSchema = flowSchema.extend({
+  scopes: z.array(z.string()).optional(),
+  organizations: z.array(z.string().min(1)).max(50).optional(),
+})
 
 function stageOf(flow: FlowPayload): 'instance' | 'authenticate' | 'consent' {
-  if (flow.connection) {
+  if (flow.auth) {
     return 'consent'
   }
   if (flow.pendingUrl || config.lockedDokployUrl) {
@@ -52,16 +58,14 @@ function presentFlow(flow: FlowPayload, token: string) {
     client: { name: flow.clientName },
     locked_instance: config.lockedDokployUrl,
     requires_https: !config.allowInsecureDokploy,
-    instance: flow.connection
-      ? { url: flow.connection.url, host: flow.connection.host }
-      : flow.pendingUrl
-        ? { url: flow.pendingUrl, host: flow.pendingHost ?? null }
-        : config.lockedDokployUrl
-          ? { url: config.lockedDokployUrl, host: new URL(config.lockedDokployUrl).hostname }
-          : null,
-    account: flow.connection?.account ?? null,
-    method: flow.connection?.method ?? null,
-    two_factor_pending: Boolean(flow.pendingCookies && !flow.connection),
+    instance: flow.pendingUrl
+      ? { url: flow.pendingUrl, host: flow.pendingHost ?? null }
+      : config.lockedDokployUrl
+        ? { url: config.lockedDokployUrl, host: new URL(config.lockedDokployUrl).hostname }
+        : null,
+    account: flow.auth?.account ?? null,
+    method: flow.auth?.method ?? null,
+    two_factor_pending: Boolean(flow.pendingCookies && !flow.auth),
     requested_scopes: flow.scopes,
     scope_catalog: describeScopes(flow.scopes),
   }
@@ -114,7 +118,7 @@ export default class FlowController {
       pendingUrl: instance.url,
       pendingHost: instance.host,
       pendingCookies: undefined,
-      connection: undefined,
+      auth: undefined,
     }
     const persisted = await this.persist(next)
     return response.json({
@@ -163,22 +167,11 @@ export default class FlowController {
     cookies: string
   ) {
     const account = await fetchAccountWithSession(instanceUrl, cookies)
-    const apiKey = await createApiKeyWithSession(
-      instanceUrl,
-      cookies,
-      config.apiKeyLabel,
-      account.organizationId
-    )
-    const connection: DokployConnection = {
-      url: instanceUrl,
-      host: new URL(instanceUrl).hostname,
-      apiKey,
-      account,
-      method: 'credentials',
-    }
     const persisted = await this.persist({
       ...flow,
-      connection,
+      auth: { method: 'credentials', account, cookies },
+      pendingUrl: instanceUrl,
+      pendingHost: new URL(instanceUrl).hostname,
       pendingCookies: undefined,
     })
     return response.json(presentFlow(persisted.flow, persisted.token))
@@ -193,15 +186,35 @@ export default class FlowController {
     const instanceUrl = this.resolveInstanceUrl(flow)
 
     const account = await fetchAccountWithApiKey(instanceUrl, parsed.data.api_key)
-    const connection: DokployConnection = {
-      url: instanceUrl,
-      host: new URL(instanceUrl).hostname,
-      apiKey: parsed.data.api_key,
-      account,
-      method: 'api_key',
-    }
-    const persisted = await this.persist({ ...flow, connection, pendingCookies: undefined })
+    const persisted = await this.persist({
+      ...flow,
+      auth: { method: 'api_key', account, apiKey: parsed.data.api_key },
+      pendingUrl: instanceUrl,
+      pendingHost: new URL(instanceUrl).hostname,
+      pendingCookies: undefined,
+    })
     return response.json(presentFlow(persisted.flow, persisted.token))
+  }
+
+  async avatar({ request, response }: HttpContext) {
+    const parsed = flowSchema.safeParse(request.body())
+    if (!parsed.success) {
+      return response.status(400).json({ error: 'invalid_request' })
+    }
+    const flow = await this.load(parsed.data.flow)
+    if (!flow.auth) {
+      return response
+        .status(409)
+        .json({ error: 'not_authenticated', error_description: 'Sign in to the panel first.' })
+    }
+    const instanceUrl = this.resolveInstanceUrl(flow)
+    let image: string | null = null
+    if (flow.auth.method === 'credentials' && flow.auth.cookies) {
+      image = await fetchAvatarWithSession(instanceUrl, flow.auth.cookies)
+    } else if (flow.auth.method === 'api_key' && flow.auth.apiKey) {
+      image = await fetchAvatarWithApiKey(instanceUrl, flow.auth.apiKey)
+    }
+    return response.json({ image })
   }
 
   async consent({ request, response }: HttpContext) {
@@ -210,7 +223,8 @@ export default class FlowController {
       return response.status(400).json({ error: 'invalid_request' })
     }
     const flow = await this.load(parsed.data.flow)
-    if (!flow.connection) {
+    const auth = flow.auth
+    if (!auth) {
       return response
         .status(409)
         .json({ error: 'not_authenticated', error_description: 'Sign in to the panel first.' })
@@ -227,13 +241,77 @@ export default class FlowController {
       })
     }
 
+    const available = auth.account.organizations ?? []
+    let selected = available
+    if (parsed.data.organizations !== undefined && available.length > 0) {
+      const wanted = new Set(parsed.data.organizations)
+      selected = available.filter((organization) => wanted.has(organization.id))
+      if (selected.length === 0) {
+        return response.status(400).json({
+          error: 'invalid_request',
+          error_description: 'Select at least one organization to authorize.',
+        })
+      }
+    }
+
+    const instanceUrl = this.resolveInstanceUrl(flow)
+    const organizations: ConnectionOrganization[] = []
+    if (auth.method === 'api_key') {
+      if (!auth.apiKey) {
+        return response
+          .status(409)
+          .json({ error: 'not_authenticated', error_description: 'Sign in to the panel first.' })
+      }
+      const targets = selected.length
+        ? selected
+        : [{ id: auth.account.organizationId ?? 'default', name: auth.account.organizationName }]
+      for (const target of targets) {
+        organizations.push({ id: target.id, name: target.name, apiKey: auth.apiKey })
+      }
+    } else {
+      if (!auth.cookies) {
+        return response
+          .status(409)
+          .json({ error: 'session_expired', error_description: 'Sign in to the panel again.' })
+      }
+      const targets = selected.length
+        ? selected
+        : [{ id: auth.account.organizationId, name: auth.account.organizationName }]
+      for (const target of targets) {
+        const apiKey = await createApiKeyWithSession(
+          instanceUrl,
+          auth.cookies,
+          config.apiKeyLabel,
+          target.id
+        )
+        organizations.push({ id: target.id ?? 'default', name: target.name, apiKey })
+      }
+    }
+
+    const primary =
+      organizations.find((organization) => organization.id === auth.account.organizationId) ??
+      organizations[0]
+    const connection: DokployConnection = {
+      url: instanceUrl,
+      host: new URL(instanceUrl).hostname,
+      apiKey: primary.apiKey,
+      account: {
+        ...auth.account,
+        organizationId: primary.id,
+        organizationName: primary.name,
+        organizations: organizations.map(({ id, name }) => ({ id, name })),
+      },
+      method: auth.method,
+      organizations,
+    }
+
     const code = await sealCode({
       clientId: flow.clientId,
       redirectUri: flow.redirectUri,
       codeChallenge: flow.codeChallenge,
       codeChallengeMethod: flow.codeChallengeMethod,
       scopes: granted,
-      connection: flow.connection,
+      connection,
     })
 
     const target = new URL(flow.redirectUri)
@@ -241,7 +319,11 @@ export default class FlowController {
     if (flow.state) {
       target.searchParams.set('state', flow.state)
     }
-    return response.json({ redirect_to: target.toString(), granted_scopes: granted })
+    return response.json({
+      redirect_to: target.toString(),
+      granted_scopes: granted,
+      granted_organizations: organizations.map(({ id, name }) => ({ id, name })),
+    })
   }
 
   async deny({ request, response }: HttpContext) {

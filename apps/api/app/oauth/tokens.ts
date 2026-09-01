@@ -3,12 +3,26 @@ import { EncryptJWT, jwtDecrypt } from 'jose'
 import config from '#config/dokploy_mcp'
 import type { DokployAccount, Scope } from '@dokploy-mcp/core'
 
+export interface ConnectionOrganization {
+  id: string
+  name: string | null
+  apiKey: string
+}
+
 export interface DokployConnection {
   url: string
   host: string
   apiKey: string
   account: DokployAccount
   method: 'credentials' | 'api_key'
+  organizations?: ConnectionOrganization[]
+}
+
+export interface FlowAuth {
+  method: 'credentials' | 'api_key'
+  account: DokployAccount
+  cookies?: string
+  apiKey?: string
 }
 
 export interface AuthorizationRequest {
@@ -25,7 +39,7 @@ export interface AuthorizationRequest {
 export interface FlowPayload extends AuthorizationRequest {
   typ: 'flow'
   nonce: string
-  connection?: DokployConnection
+  auth?: FlowAuth
   pendingCookies?: string
   pendingUrl?: string
   pendingHost?: string
