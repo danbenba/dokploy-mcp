@@ -1,5 +1,10 @@
 import { DokployAuthError, extractErrorMessage } from './errors.js'
 
+export interface DokployOrganization {
+  id: string
+  name: string | null
+}
+
 export interface DokployAccount {
   name: string
   email: string
@@ -7,6 +12,7 @@ export interface DokployAccount {
   role: string | null
   organizationId: string | null
   organizationName: string | null
+  organizations: DokployOrganization[]
 }
 
 export interface CredentialSession {
@@ -192,6 +198,20 @@ function pickOrganization(
   return fallback ? { id: fallback.id, name: fallback.name } : { id: null, name: null }
 }
 
+function listOrganizations(
+  entries: OrganizationEntry[],
+  active: { id: string | null; name: string | null }
+): DokployOrganization[] {
+  const organizations: DokployOrganization[] = entries.map((entry) => ({
+    id: entry.id,
+    name: entry.name,
+  }))
+  if (active.id && !organizations.some((organization) => organization.id === active.id)) {
+    organizations.unshift({ id: active.id, name: active.name })
+  }
+  return organizations
+}
+
 function sanitizeImage(value: unknown): string | null {
   if (typeof value !== 'string' || value.length === 0 || value.length > 2048) {
     return null
@@ -209,10 +229,21 @@ function displayName(user: Record<string, unknown>): string {
   return String(user.name ?? user.email ?? 'Dokploy user')
 }
 
+function presentableImage(value: unknown): string | null {
+  if (typeof value !== 'string' || value.length === 0 || value.length > 4_000_000) {
+    return null
+  }
+  if (value.startsWith('data:image/') || value.startsWith('https://') || value.startsWith('http://')) {
+    return value
+  }
+  return null
+}
+
 function toAccount(
   user: Record<string, unknown>,
   role: string | null,
-  organization: { id: string | null; name: string | null }
+  organization: { id: string | null; name: string | null },
+  organizations: DokployOrganization[]
 ): DokployAccount {
   return {
     name: displayName(user),
@@ -221,6 +252,7 @@ function toAccount(
     role,
     organizationId: organization.id,
     organizationName: organization.name,
+    organizations,
   }
 }
 
@@ -260,7 +292,24 @@ export async function fetchAccountWithSession(
     }
   }
   const role = typeof user.role === 'string' ? user.role : null
-  return toAccount(user, role, pickOrganization(entries, activeOrganizationId))
+  const active = pickOrganization(entries, activeOrganizationId)
+  return toAccount(user, role, active, listOrganizations(entries, active))
+}
+
+export async function fetchAvatarWithSession(
+  baseUrl: string,
+  cookies: string
+): Promise<string | null> {
+  const session = await authFetch(baseUrl, '/api/auth/get-session', { cookies })
+  if (!session.response.ok) {
+    throw new DokployAuthError('session_invalid', 'The Dokploy session is no longer valid.')
+  }
+  try {
+    const data = JSON.parse(session.text) as { user?: Record<string, unknown> }
+    return presentableImage(data.user?.image)
+  } catch {
+    return null
+  }
 }
 
 export async function createApiKeyWithSession(
@@ -308,10 +357,10 @@ export async function createApiKeyWithSession(
   )
 }
 
-export async function fetchAccountWithApiKey(
+async function fetchUserRowWithApiKey(
   baseUrl: string,
   apiKey: string
-): Promise<DokployAccount> {
+): Promise<Record<string, unknown>> {
   let response: Response
   let text: string
   try {
@@ -331,15 +380,31 @@ export async function fetchAccountWithApiKey(
     throw new DokployAuthError('invalid_api_key', extractErrorMessage(response.status, text))
   }
 
-  let row: Record<string, unknown> = {}
   try {
-    row = JSON.parse(text) as Record<string, unknown>
+    return JSON.parse(text) as Record<string, unknown>
   } catch {
-    row = {}
+    return {}
   }
+}
+
+export async function fetchAccountWithApiKey(
+  baseUrl: string,
+  apiKey: string
+): Promise<DokployAccount> {
+  const row = await fetchUserRowWithApiKey(baseUrl, apiKey)
   const user = (row.user as Record<string, unknown>) ?? row
   const role =
     typeof row.role === 'string' ? row.role : typeof user.role === 'string' ? user.role : null
   const organizationId = typeof row.organizationId === 'string' ? row.organizationId : null
-  return toAccount(user, role, { id: organizationId, name: null })
+  const organizations = organizationId ? [{ id: organizationId, name: null }] : []
+  return toAccount(user, role, { id: organizationId, name: null }, organizations)
+}
+
+export async function fetchAvatarWithApiKey(
+  baseUrl: string,
+  apiKey: string
+): Promise<string | null> {
+  const row = await fetchUserRowWithApiKey(baseUrl, apiKey)
+  const user = (row.user as Record<string, unknown>) ?? row
+  return presentableImage(user.image)
 }

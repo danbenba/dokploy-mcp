@@ -1,11 +1,12 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
-import type DokployClient from '../dokploy/client.js'
+import type { DokployCaller, OrganizationClient } from '../dokploy/org_pool.js'
 import type { DokployAccount } from '../dokploy/authenticator.js'
 import type { Scope } from '../scopes.js'
 import { hasScope } from '../scopes.js'
 
 export interface McpContext {
-  client: DokployClient
+  client: DokployCaller
+  organizations: OrganizationClient[]
   scopes: Scope[]
   account: DokployAccount
   instanceUrl: string
