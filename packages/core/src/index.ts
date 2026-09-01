@@ -10,6 +10,13 @@ export {
 export { default as DokployClient, type DokployClientOptions } from './dokploy/client.js'
 
 export {
+  DokployOrgPool,
+  type DokployCaller,
+  type OrganizationClient,
+  type OrganizationCredential,
+} from './dokploy/org_pool.js'
+
+export {
   isPrivateAddress,
   verifyDokployInstance,
   type VerifiedInstance,
@@ -20,11 +27,14 @@ export {
   createApiKeyWithSession,
   fetchAccountWithApiKey,
   fetchAccountWithSession,
+  fetchAvatarWithApiKey,
+  fetchAvatarWithSession,
   signInWithEmail,
   verifyBackupCode,
   verifyTotpCode,
   type CredentialSession,
   type DokployAccount,
+  type DokployOrganization,
 } from './dokploy/authenticator.js'
 
 export {

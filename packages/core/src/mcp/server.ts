@@ -17,7 +17,7 @@ export const SERVER_VERSION = '0.1.0'
 
 export const SERVER_INSTRUCTIONS = `Control a Dokploy instance end to end: projects, environments, applications, compose stacks, databases, domains, deployments and logs. Dokploy is an open-source platform that runs Docker containers behind a Traefik reverse proxy with automatic TLS.
 
-Hierarchy, never violate it: organization contains projects, a project contains environments, and every service lives inside an environment. A new project automatically gets a "production" environment. Services are applications (one container built from git or pulled as an image), compose stacks, and databases.
+Hierarchy, never violate it: organization contains projects, a project contains environments, and every service lives inside an environment. A connection may span several organizations: dokploy_status lists them, list_projects covers them all, and create_project accepts an organization_id to choose one. A new project automatically gets a "production" environment. Services are applications (one container built from git or pulled as an image), compose stacks, and databases.
 
 The standard flow to put a site online, detailed in playbook("deploy"): create_project, create_application, configure_app_source, configure_app_build, set_service_env, add_domain, then service_action with action "deploy". Deployments are asynchronous: poll list_deployments until the status leaves "running", and read deployment_logs when it ends in error.
 

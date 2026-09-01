@@ -9,16 +9,41 @@ export function register(server: McpServer, context: McpContext): void {
     {
       title: 'List projects',
       description:
-        'List every project with its environments and all services inside them (id, name, type, status). This is the map of the whole Dokploy instance: start here to find any projectId, environmentId or service id.',
+        'List every project with its environments and all services inside them (id, name, type, status). Covers every organization granted to this connection, each project tagged with its organization. This is the map of the whole Dokploy instance: start here to find any projectId, environmentId or service id.',
       inputSchema: {},
     },
     async () => {
       requireScope(context, 'read')
-      const data = await context.client.get('/project.all')
-      if (!Array.isArray(data)) {
-        return textResult(data)
+      if (context.organizations.length <= 1) {
+        const data = await context.client.get('/project.all')
+        if (!Array.isArray(data)) {
+          return textResult(data)
+        }
+        return textResult(
+          data.map((project) => summarizeProject(project as Record<string, unknown>))
+        )
       }
-      return textResult(data.map((project) => summarizeProject(project as Record<string, unknown>)))
+      const results = await Promise.all(
+        context.organizations.map(async (organization) => {
+          const tag = { id: organization.id, name: organization.name }
+          try {
+            const data = await organization.client.get('/project.all')
+            const projects = Array.isArray(data) ? data : []
+            return projects.map((project) => ({
+              organization: tag,
+              ...summarizeProject(project as Record<string, unknown>),
+            }))
+          } catch (error) {
+            return [
+              {
+                organization: tag,
+                error: error instanceof Error ? error.message : String(error),
+              },
+            ]
+          }
+        })
+      )
+      return textResult(results.flat())
     }
   )
 
@@ -71,22 +96,35 @@ export function register(server: McpServer, context: McpContext): void {
       {
         title: 'Create a project',
         description:
-          'Create a project. Dokploy automatically adds a "production" environment to it; the response includes that environment so you can immediately create services inside it.',
+          'Create a project. Dokploy automatically adds a "production" environment to it; the response includes that environment so you can immediately create services inside it. When the connection spans several organizations, pass organization_id (from dokploy_status or list_projects) to choose where it is created; the first granted organization is used otherwise.',
         inputSchema: {
           name: z.string().min(1),
           description: z.string().optional(),
+          organization_id: z.string().optional(),
         },
       },
-      async ({ name, description }) => {
+      async ({ name, description, organization_id }) => {
         requireScope(context, 'create')
-        const project = (await context.client.post('/project.create', {
+        let client = context.client
+        if (organization_id) {
+          const organization = context.organizations.find((entry) => entry.id === organization_id)
+          if (!organization) {
+            throw new Error(
+              `This connection has no access to organization ${organization_id}. Granted organizations: ${context.organizations
+                .map((entry) => `${entry.id}${entry.name ? ` (${entry.name})` : ''}`)
+                .join(', ')}.`
+            )
+          }
+          client = organization.client
+        }
+        const project = (await client.post('/project.create', {
           name,
           description: description ?? null,
         })) as Record<string, unknown>
         const projectId = typeof project?.projectId === 'string' ? project.projectId : null
         let environments: unknown = null
         if (projectId) {
-          const raw = await context.client.get('/environment.byProjectId', { projectId })
+          const raw = await client.get('/environment.byProjectId', { projectId })
           environments = Array.isArray(raw)
             ? raw.map((environment) => summarizeEnvironment(environment as Record<string, unknown>))
             : raw

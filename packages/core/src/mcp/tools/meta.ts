@@ -22,6 +22,10 @@ export function register(server: McpServer, context: McpContext): void {
           email: context.account.email,
           organization: context.account.organizationName,
         },
+        organizations: context.organizations.map((organization) => ({
+          id: organization.id,
+          name: organization.name,
+        })),
         granted_scopes: context.scopes,
         dokploy_catalog_endpoints: catalogCount(),
       }
