@@ -31,6 +31,7 @@ router
 router
   .group(() => {
     router.post('/session', [FlowController, 'session'])
+    router.post('/avatar', [FlowController, 'avatar'])
     router.post('/verify', [FlowController, 'verify'])
     router.post('/login', [FlowController, 'login'])
     router.post('/second-factor', [FlowController, 'secondFactor'])

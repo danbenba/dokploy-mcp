@@ -13,8 +13,10 @@ const connection: DokployConnection = {
     role: 'owner',
     organizationId: 'org-1',
     organizationName: 'Acme',
+    organizations: [{ id: 'org-1', name: 'Acme' }],
   },
   method: 'credentials',
+  organizations: [{ id: 'org-1', name: 'Acme', apiKey: 'test-api-key' }],
 }
 
 function tokenFor(scopes: Scope[]) {
