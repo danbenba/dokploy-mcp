@@ -19,6 +19,8 @@ export function AuthorizePage() {
   const [flow, setFlow] = useState<FlowState | null>(null)
   const [flowToken, setFlowToken] = useState(flowParam ?? '')
   const [selected, setSelected] = useState<string[]>([])
+  const [selectedOrgs, setSelectedOrgs] = useState<string[]>([])
+  const [avatar, setAvatar] = useState<string | null>(null)
   const [bootError, setBootError] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState<'allow' | 'deny' | null>(null)
@@ -34,6 +36,7 @@ export function AuthorizePage() {
         setFlow(state)
         setFlowToken(state.token)
         setSelected(state.requested_scopes)
+        setSelectedOrgs((state.account?.organizations ?? []).map((organization) => organization.id))
         if (state.stage !== 'consent') {
           navigate(`/login?flow=${encodeURIComponent(state.token)}`, { replace: true })
         }
@@ -47,9 +50,33 @@ export function AuthorizePage() {
       })
   }, [flowParam, navigate])
 
+  useEffect(() => {
+    if (!flow || flow.stage !== 'consent' || flow.account?.image) {
+      return
+    }
+    let cancelled = false
+    api
+      .avatar(flow.token)
+      .then((result) => {
+        if (!cancelled && result.image) {
+          setAvatar(result.image)
+        }
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [flow])
+
   const toggle = (scope: string) => {
     setSelected((current) =>
       current.includes(scope) ? current.filter((item) => item !== scope) : [...current, scope]
+    )
+  }
+
+  const toggleOrg = (id: string) => {
+    setSelectedOrgs((current) =>
+      current.includes(id) ? current.filter((item) => item !== id) : [...current, id]
     )
   }
 
@@ -57,7 +84,12 @@ export function AuthorizePage() {
     setError(null)
     setSubmitting('allow')
     try {
-      const result = await api.consent(flowToken, selected)
+      const organizations = flow?.account?.organizations ?? []
+      const result = await api.consent(
+        flowToken,
+        selected,
+        organizations.length > 0 ? selectedOrgs : undefined
+      )
       window.location.href = result.redirect_to
     } catch (cause) {
       setError(cause instanceof ApiError ? cause.message : 'Could not complete the authorization.')
@@ -105,6 +137,8 @@ export function AuthorizePage() {
   }
 
   const account = flow.account
+  const organizations = account?.organizations ?? []
+  const avatarSrc = account?.image ?? avatar
   const initials = (account?.name ?? '?')
     .split(' ')
     .map((part) => part[0])
@@ -137,9 +171,9 @@ export function AuthorizePage() {
       <CardContent className="space-y-6 p-0">
         <div className="rounded-lg border bg-card p-4">
           <div className="flex items-center gap-3">
-            {account?.image ? (
+            {avatarSrc ? (
               <img
-                src={account.image}
+                src={avatarSrc}
                 alt=""
                 className="size-10 rounded-full object-cover"
                 referrerPolicy="no-referrer"
@@ -169,7 +203,7 @@ export function AuthorizePage() {
               </dt>
               <dd className="truncate font-medium">{flow.instance?.host}</dd>
             </div>
-            {account?.organizationName ? (
+            {organizations.length <= 1 && account?.organizationName ? (
               <div className="flex items-center justify-between gap-3">
                 <dt className="flex items-center gap-2 text-muted-foreground">
                   <Building2 className="size-3.5" />
@@ -186,6 +220,45 @@ export function AuthorizePage() {
             </div>
           </dl>
         </div>
+
+        {organizations.length > 1 ? (
+          <div className="space-y-3">
+            <p className="text-sm font-medium">Organizations to connect</p>
+            {organizations.map((organization) => {
+              const active = selectedOrgs.includes(organization.id)
+              return (
+                <button
+                  type="button"
+                  key={organization.id}
+                  onClick={() => toggleOrg(organization.id)}
+                  aria-pressed={active}
+                  className={cn(
+                    'flex w-full items-center gap-3 rounded-lg border p-3 text-left transition-colors',
+                    active ? 'border-primary/40 bg-accent' : 'bg-card hover:bg-accent/50'
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'flex size-5 shrink-0 items-center justify-center rounded border transition-colors',
+                      active ? 'border-primary bg-primary text-primary-foreground' : 'border-input'
+                    )}
+                  >
+                    {active ? <Check className="size-3.5" /> : null}
+                  </span>
+                  <span className="flex min-w-0 flex-1 items-center gap-2">
+                    <Building2 className="size-4 shrink-0 text-muted-foreground" />
+                    <span className="truncate text-sm font-medium">
+                      {organization.name ?? organization.id}
+                    </span>
+                    {organization.id === account?.organizationId ? (
+                      <Badge variant="secondary">Active</Badge>
+                    ) : null}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        ) : null}
 
         <div className="space-y-3">
           <p className="text-sm font-medium">Permissions to grant</p>
@@ -231,7 +304,11 @@ export function AuthorizePage() {
           <Button
             className="flex-1"
             onClick={onAllow}
-            disabled={submitting !== null || selected.length === 0}
+            disabled={
+              submitting !== null ||
+              selected.length === 0 ||
+              (organizations.length > 1 && selectedOrgs.length === 0)
+            }
           >
             {submitting === 'allow' ? <Loader2 className="size-4 animate-spin" /> : null}
             Authorize
