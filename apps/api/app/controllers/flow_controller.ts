@@ -4,6 +4,8 @@ import config from '#config/dokploy_mcp'
 import { DokployAuthError, describeScopes, isScope, verifyDokployInstance } from '@dokploy-mcp/core'
 import type { Scope } from '@dokploy-mcp/core'
 import {
+  consumeOnce,
+  hasConsumed,
   openFlow,
   sealCode,
   sealFlow,
@@ -74,7 +76,11 @@ function presentFlow(flow: FlowPayload, token: string) {
 
 export default class FlowController {
   private async load(token: string): Promise<FlowPayload> {
-    return openFlow(token)
+    const flow = await openFlow(token)
+    if (hasConsumed(`flow:${flow.nonce}`)) {
+      throw new TokenError('used', 'This authorization link has already been used. Start again from your assistant.')
+    }
+    return flow
   }
 
   private async persist(flow: FlowPayload) {
@@ -329,6 +335,8 @@ export default class FlowController {
       connection,
     })
 
+    consumeOnce(`flow:${flow.nonce}`, config.flowSessionTtl)
+
     const target = new URL(flow.redirectUri)
     target.searchParams.set('code', code)
     if (flow.state) {
@@ -347,6 +355,7 @@ export default class FlowController {
       return response.status(400).json({ error: 'invalid_request' })
     }
     const flow = await this.load(parsed.data.flow)
+    consumeOnce(`flow:${flow.nonce}`, config.flowSessionTtl)
     const target = new URL(flow.redirectUri)
     target.searchParams.set('error', 'access_denied')
     target.searchParams.set('error_description', 'The user declined the authorization request.')

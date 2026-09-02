@@ -39,7 +39,7 @@ async function json<T>(url: string, init: RequestInit): Promise<T> {
 }
 
 function successPage(host: string): string {
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Connected</title><style>html{color-scheme:light dark}body{margin:0;min-height:100vh;display:grid;place-items:center;font-family:Inter,system-ui,sans-serif;background:#0a0a0a;color:#fafafa}main{text-align:center;padding:2rem}.check{width:64px;height:64px;border-radius:50%;background:#10b981;display:grid;place-items:center;margin:0 auto 1.25rem;animation:pop .45s cubic-bezier(.2,.9,.3,1.3)}svg{width:34px;height:34px}h1{font-size:1.25rem;margin:0 0 .5rem}p{margin:0;color:#a3a3a3;font-size:.9rem}@keyframes pop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}</style></head><body><main><div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></div><h1>Connected to ${host}</h1><p>You can close this window and return to your terminal.</p></main></body></html>`
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Connected</title><script>setTimeout(function(){window.close()},1800)</script><style>html{color-scheme:light dark}body{margin:0;min-height:100vh;display:grid;place-items:center;font-family:Inter,system-ui,sans-serif;background:#0a0a0a;color:#fafafa}main{text-align:center;padding:2rem}.check{width:64px;height:64px;border-radius:50%;background:#10b981;display:grid;place-items:center;margin:0 auto 1.25rem;animation:pop .45s cubic-bezier(.2,.9,.3,1.3)}svg{width:34px;height:34px}h1{font-size:1.25rem;margin:0 0 .5rem}p{margin:0;color:#a3a3a3;font-size:.9rem}@keyframes pop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}</style></head><body><main><div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></div><h1>Connected to ${host}</h1><p>You can close this window and return to your terminal.</p></main></body></html>`
 }
 
 function errorPage(message: string): string {
@@ -88,6 +88,11 @@ export async function startLogin(serverUrl: string): Promise<LoginHandle> {
     settle = { resolve, reject }
   })
 
+  const shutdown = () => {
+    server.closeAllConnections()
+    server.close()
+  }
+
   server.on('request', async (request, response) => {
     const url = new URL(request.url ?? '/', redirectUri)
     if (url.pathname !== '/callback') {
@@ -129,9 +134,10 @@ export async function startLogin(serverUrl: string): Promise<LoginHandle> {
         headers: { authorization: `Bearer ${tokens.access_token}` },
       })
       response
-        .writeHead(200, { 'content-type': 'text/html; charset=utf-8' })
+        .writeHead(200, { 'content-type': 'text/html; charset=utf-8', connection: 'close' })
         .end(successPage(credentials.host))
       settle?.resolve(credentials)
+      setTimeout(() => shutdown(), 200)
     } catch (error) {
       fail(error instanceof Error ? error.message : String(error))
     }
@@ -140,7 +146,7 @@ export async function startLogin(serverUrl: string): Promise<LoginHandle> {
   return {
     authorizeUrl: authorize.toString(),
     waitForCredentials: () => result,
-    close: () => server.close(),
+    close: shutdown,
   }
 }
 

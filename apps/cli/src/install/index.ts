@@ -51,12 +51,17 @@ async function credentialsFromFlags(url: string, keys: string[]): Promise<CliCre
   }
 }
 
-async function credentialsFromBrowser(server: string): Promise<CliCredentials> {
+async function credentialsFromBrowser(server: string, printUrl: boolean): Promise<CliCredentials> {
   const login = await startLogin(server)
   console.log(`  ${ui.text.bold('Sign in')} ${chip('browser')} ${ui.muted('a browser window opens to sign in to your Dokploy panel')}`)
-  console.log(`  ${ui.muted('If nothing opens, visit:')}`)
-  console.log(`  ${ui.secondary.underline(login.authorizeUrl)}\n`)
-  openBrowser(login.authorizeUrl)
+  const opened = openBrowser(login.authorizeUrl)
+  if (printUrl || !opened) {
+    console.log(`  ${ui.muted('Open this link if nothing happened:')}`)
+    console.log(`  ${ui.secondary.underline(login.authorizeUrl)}`)
+  } else {
+    console.log(`  ${ui.muted('Nothing opened? Re-run with --print-url to get the link.')}`)
+  }
+  console.log('')
   const spinner = new Spinner('Waiting for sign-in', 'complete the steps in your browser').start()
   const timeout = new Promise<never>((_, reject) =>
     setTimeout(() => reject(new Error('Timed out waiting for the browser sign-in.')), LOGIN_TIMEOUT_MS)
@@ -119,7 +124,7 @@ export async function runInstall(argv: string[], version: string): Promise<void>
   const credentials =
     url && rawKeys
       ? await credentialsFromFlags(normalizeBaseUrl(url), splitList(rawKeys))
-      : await credentialsFromBrowser(server)
+      : await credentialsFromBrowser(server, flags['print-url'] === 'true')
   const organizations = credentials.organizations
   console.log(
     `  ${ui.muted('Organizations:')} ${organizations.map((organization) => ui.primary(organization.name ?? organization.id)).join(ui.border(' · '))}\n`
@@ -170,4 +175,5 @@ export async function runInstall(argv: string[], version: string): Promise<void>
   console.log('')
   console.log(`  ${ui.muted('note:')} ${ui.muted('restart the desktop apps so they pick up the new server. Try "list my Dokploy projects" in your assistant.')}`)
   console.log(`  ${ui.muted('note:')} ${ui.muted('revoke access at any time by deleting the API keys in your Dokploy panel, Settings then API Keys.')}\n`)
+  process.exit(failures.length === results.length ? 1 : 0)
 }
