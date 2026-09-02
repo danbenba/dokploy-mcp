@@ -74,6 +74,12 @@ DOKPLOY_API_KEY="key-of-org-a,key-of-org-b" npx -y dokploy-rest
 and `create_project` accepts an `organization_id`. Every other tool finds the organization that
 owns the resource it is given.
 
+## Updates
+
+Every run checks npm once every six hours and offers to update when a newer version exists
+(`npx -y dokploy-rest@latest install` when launched through npx, `npm i -g dokploy-rest@latest`
+when installed globally). Set `DOKPLOY_REST_NO_UPDATE_CHECK=1` to disable the check.
+
 ## Narrowing permissions
 
 By default every tool is exposed. Restrict the surface with `--scopes` or `DOKPLOY_SCOPES`:
