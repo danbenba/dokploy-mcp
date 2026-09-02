@@ -9,7 +9,6 @@ import {
 } from 'motion/react'
 import { ChevronRight, Loader2 } from 'lucide-react'
 import { ShinyText } from '@/components/shiny-text'
-import { Logo } from '@/components/logo'
 import { cn } from '@/lib/utils'
 
 export type SlideStatus = 'idle' | 'loading' | 'success'
@@ -85,7 +84,7 @@ export function SlideToAuthorize({
   }
 
   return (
-    <div className="space-y-4">
+    <div>
       <div
         ref={trackRef}
         role="slider"
@@ -139,10 +138,6 @@ export function SlideToAuthorize({
             <ChevronRight className="size-6" />
           )}
         </motion.div>
-      </div>
-      <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-        <Logo className="size-4" />
-        Secured by Dokploy MCP
       </div>
     </div>
   )

@@ -5,8 +5,9 @@ export function AuthorizeSkeleton() {
     <div className="space-y-6" aria-busy="true" aria-label="Loading the authorization request">
       <div className="flex flex-col items-center gap-4">
         <div className="flex items-center gap-3">
-          <Skeleton className="size-12 rounded-2xl" />
-          <Skeleton className="size-12 rounded-2xl" />
+          <Skeleton className="size-13 rounded-2xl" />
+          <Skeleton className="h-[3px] w-14" />
+          <Skeleton className="size-13 rounded-2xl" />
         </div>
         <Skeleton className="h-6 w-64" />
         <Skeleton className="h-4 w-44" />
