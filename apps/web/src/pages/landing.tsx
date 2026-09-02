@@ -4,6 +4,8 @@ import claudeMark from '@/assets/brands/claude.svg'
 import openaiMark from '@/assets/brands/openai.svg'
 import { Logo } from '@/components/logo'
 import { Reveal, Stagger, StaggerItem } from '@/components/landing/reveal'
+import { MacbookPro } from '@/components/landing/macbook-pro'
+import { ClaudeCodeDemo } from '@/components/landing/claude-code-demo'
 import { CopyButton } from '@/components/landing/copy-button'
 import { AddToButton } from '@/components/landing/add-to-button'
 import { Button } from '@/components/ui/button'
@@ -242,6 +244,26 @@ export function LandingPage() {
 
       <main>
         <Hero />
+
+        <section className="border-t py-20 sm:py-28" aria-labelledby="demo">
+          <Container>
+            <SectionTitle
+              eyebrow="Watch it work"
+              title="One sentence in Claude Code. A deployment on your panel."
+              body="A real session: Claude lists your projects, triggers the deploy, follows the build and reports back, all through Dokploy MCP."
+            />
+            <Reveal delay={0.1} y={24} className="mx-auto mt-12 hidden w-full max-w-[900px] min-[480px]:block">
+              <MacbookPro>
+                <ClaudeCodeDemo />
+              </MacbookPro>
+            </Reveal>
+            <Reveal delay={0.1} className="mt-10 overflow-hidden rounded-xl border border-neutral-800 min-[480px]:hidden">
+              <div className="h-[420px]">
+                <ClaudeCodeDemo fontScale={1 / 34} />
+              </div>
+            </Reveal>
+          </Container>
+        </section>
 
         <section className="border-t py-20 sm:py-28" aria-labelledby="features">
           <Container>
