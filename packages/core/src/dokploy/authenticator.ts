@@ -3,6 +3,8 @@ import { DokployAuthError, extractErrorMessage } from './errors.js'
 export interface DokployOrganization {
   id: string
   name: string | null
+  logo?: string | null
+  isDefault?: boolean
 }
 
 export interface DokployAccount {
@@ -159,6 +161,7 @@ export async function verifyBackupCode(
 interface OrganizationEntry {
   id: string
   name: string | null
+  logo: string | null
   isDefault: boolean
 }
 
@@ -177,6 +180,7 @@ function parseOrganizations(payload: unknown): OrganizationEntry[] {
     entries.push({
       id,
       name: typeof row.name === 'string' ? row.name : null,
+      logo: sanitizeImage(row.logo),
       isDefault: members.some((member) => member.isDefault === true),
     })
   }
@@ -205,9 +209,11 @@ function listOrganizations(
   const organizations: DokployOrganization[] = entries.map((entry) => ({
     id: entry.id,
     name: entry.name,
+    logo: entry.logo,
+    isDefault: entry.isDefault,
   }))
   if (active.id && !organizations.some((organization) => organization.id === active.id)) {
-    organizations.unshift({ id: active.id, name: active.name })
+    organizations.unshift({ id: active.id, name: active.name, logo: null, isDefault: false })
   }
   return organizations
 }
@@ -220,16 +226,22 @@ function sanitizeImage(value: unknown): string | null {
 }
 
 function displayName(user: Record<string, unknown>): string {
-  const full = typeof user.name === 'string' ? user.name.trim() : ''
-  const joined = [user.firstName, user.lastName]
-    .filter((part): part is string => typeof part === 'string' && part.trim().length > 0)
-    .map((part) => part.trim())
-    .join(' ')
-  if (full.length >= joined.length && full.length > 0) {
-    return full
+  const words: string[] = []
+  const seen = new Set<string>()
+  for (const field of [user.firstName, user.lastName, user.name]) {
+    if (typeof field !== 'string') {
+      continue
+    }
+    for (const word of field.trim().split(/\s+/)) {
+      const key = word.toLowerCase()
+      if (word.length > 0 && !seen.has(key)) {
+        seen.add(key)
+        words.push(word)
+      }
+    }
   }
-  if (joined.length > 0) {
-    return joined
+  if (words.length > 0) {
+    return words.join(' ')
   }
   return String(user.email ?? 'Dokploy user')
 }

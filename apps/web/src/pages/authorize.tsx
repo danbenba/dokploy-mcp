@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
-import { Bot, Building2, ChevronDown, Server } from 'lucide-react'
+import { Bot, Building2, Layers, Server, Star } from 'lucide-react'
 import claudeLogo from '@/assets/brands/claude.png'
 import chatgptLogo from '@/assets/brands/chatgpt.png'
 import { OnboardingLayout } from '@/components/onboarding-layout'
@@ -15,6 +15,8 @@ import {
   DialogDescription,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import type { FlowOrganization } from '@/lib/api'
 import { AuthorizeSkeleton } from '@/components/authorize/authorize-skeleton'
 import { PermissionsList } from '@/components/authorize/permissions-list'
 import { SlideToAuthorize, type SlideStatus } from '@/components/authorize/slide-to-authorize'
@@ -22,6 +24,46 @@ import { SuccessCheck } from '@/components/authorize/success-check'
 import { ApiError, api, type FlowState } from '@/lib/api'
 
 const ALL = '__all__'
+
+function orgInitials(name: string | null, id: string): string {
+  const source = (name ?? id).trim()
+  return source
+    .split(/\s+/)
+    .map((part) => part[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join('')
+    .toUpperCase()
+}
+
+function OrganizationRow({
+  organization,
+  active,
+}: {
+  organization: FlowOrganization
+  active: boolean
+}) {
+  return (
+    <>
+      {organization.logo ? (
+        <img src={organization.logo} alt="" className="size-7 shrink-0 rounded-md object-cover" referrerPolicy="no-referrer" />
+      ) : (
+        <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-muted text-[11px] font-semibold text-muted-foreground">
+          {orgInitials(organization.name, organization.id)}
+        </span>
+      )}
+      <span className="min-w-0 flex-1">
+        <span className="block truncate font-medium">{organization.name ?? organization.id}</span>
+        <span className="block truncate text-xs text-muted-foreground">
+          {[active ? 'Active organization' : null, organization.isDefault ? 'Default' : null]
+            .filter(Boolean)
+            .join(' · ') || organization.id}
+        </span>
+      </span>
+      {organization.isDefault ? <Star className="size-3.5 shrink-0 fill-amber-400 text-amber-400" /> : null}
+    </>
+  )
+}
 
 function clientKind(name: string): 'claude' | 'chatgpt' | 'other' {
   if (/chatgpt|openai/i.test(name)) {
@@ -61,6 +103,8 @@ export function AuthorizePage() {
         setFlow(state)
         setFlowToken(state.token)
         setSelected(state.requested_scopes)
+        const known = state.account?.organizations ?? []
+        setOrganization(known.length === 1 ? known[0].id : ALL)
         if (state.stage !== 'consent') {
           navigate(`/login?flow=${encodeURIComponent(state.token)}`, { replace: true })
         }
@@ -327,30 +371,35 @@ export function AuthorizePage() {
 
       {organizations.length > 0 ? (
         <motion.div {...fade(0.14)} className="space-y-2">
-          <label htmlFor="organization" className="text-sm font-medium">
+          <label htmlFor="organization" className="flex items-center gap-2 text-sm font-medium">
+            <Building2 className="size-4 text-muted-foreground" />
             Organization
           </label>
-          <div className="relative">
-            <Building2 className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <select
-              id="organization"
-              value={organization}
-              onChange={(event) => setOrganization(event.target.value)}
-              disabled={busy}
-              className="h-10 w-full appearance-none rounded-lg border bg-background pl-9 pr-9 text-sm shadow-xs outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
-            >
+          <Select value={organization} onValueChange={setOrganization} disabled={busy}>
+            <SelectTrigger id="organization" aria-label="Organization">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
               {organizations.length > 1 ? (
-                <option value={ALL}>All organizations ({organizations.length})</option>
+                <SelectItem value={ALL}>
+                  <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
+                    <Layers className="size-4" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate font-medium">All organizations</span>
+                    <span className="block truncate text-xs text-muted-foreground">
+                      One API key per organization, {organizations.length} in total
+                    </span>
+                  </span>
+                </SelectItem>
               ) : null}
               {organizations.map((entry) => (
-                <option key={entry.id} value={entry.id}>
-                  {entry.name ?? entry.id}
-                  {entry.id === account?.organizationId ? ' (active)' : ''}
-                </option>
+                <SelectItem key={entry.id} value={entry.id}>
+                  <OrganizationRow organization={entry} active={entry.id === account?.organizationId} />
+                </SelectItem>
               ))}
-            </select>
-            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          </div>
+            </SelectContent>
+          </Select>
         </motion.div>
       ) : null}
 
