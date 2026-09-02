@@ -1,6 +1,6 @@
 {
   "name": "dokploy-rest",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Dokploy MCP: give Claude, ChatGPT or any MCP client control of your self-hosted Dokploy panel over stdio.",
   "mcpName": "io.github.danbenba/dokploy-mcp",
   "license": "Apache-2.0",
