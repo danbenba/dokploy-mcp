@@ -1,11 +1,16 @@
-# dokploy-mcp
+# dokploy-rest
 
-Model Context Protocol server for [Dokploy](https://dokploy.com). It gives Claude or ChatGPT
-control of the Dokploy panel you host yourself, over stdio, using an API key you already own.
+Dokploy MCP as an npm package. A [Model Context Protocol](https://modelcontextprotocol.io) server
+for [Dokploy](https://dokploy.com) that gives Claude, ChatGPT or any MCP client control of the
+Dokploy panel you host yourself, over stdio, using an API key you already own.
 
 ```bash
-npx -y dokploy-mcp --help
+npx -y dokploy-rest --help
 ```
+
+Prefer not to handle API keys at all? Add `https://mcp.dokploy.rest` as a custom connector
+instead: [dokploy.rest](https://dokploy.rest) signs you in to your own panel, lets you pick the
+organizations to expose and creates a scoped key for each of them.
 
 ## Setup
 
@@ -18,7 +23,7 @@ assistant.
 claude mcp add dokploy \
   -e DOKPLOY_URL=https://panel.example.com \
   -e DOKPLOY_API_KEY=your-key \
-  -- npx -y dokploy-mcp
+  -- npx -y dokploy-rest
 ```
 
 ### Claude Desktop
@@ -30,7 +35,7 @@ In `claude_desktop_config.json`:
   "mcpServers": {
     "dokploy": {
       "command": "npx",
-      "args": ["-y", "dokploy-mcp"],
+      "args": ["-y", "dokploy-rest"],
       "env": {
         "DOKPLOY_URL": "https://panel.example.com",
         "DOKPLOY_API_KEY": "your-key"
@@ -40,40 +45,50 @@ In `claude_desktop_config.json`:
 }
 ```
 
-## Options
+### Cursor, Windsurf, Zed and others
 
-| Flag | Environment variable | Meaning |
-|---|---|---|
-| `--url` | `DOKPLOY_URL` | Address of the panel, with or without a trailing `/api` |
-| `--api-key` | `DOKPLOY_API_KEY` | Key generated in Settings → API Keys |
-| `--scopes` | `DOKPLOY_SCOPES` | Restrict what the assistant may do. Defaults to every scope |
+Any client that launches stdio MCP servers works with the same `command`, `args` and `env`.
 
-Scopes are `read`, `deploy`, `create`, `delete` and `admin`. Tools outside the granted scopes are
-not exposed at all, so a narrowed connection cannot be talked into a destructive action:
+## Several organizations
+
+A Dokploy API key belongs to one organization. To let the assistant reach several of them, create
+one key per organization and pass them all, separated by commas:
 
 ```bash
-npx -y dokploy-mcp --scopes "read,deploy"
+DOKPLOY_API_KEY="key-of-org-a,key-of-org-b" npx -y dokploy-rest
 ```
 
-## What the assistant gets
+`dokploy_status` lists the organizations that were recognised, `list_projects` covers all of them
+and `create_project` accepts an `organization_id`. Every other tool finds the organization that
+owns the resource it is given.
 
-Projects, environments, applications, compose stacks and six database engines; git and docker
-sources, build settings, environment variables, deployments; domains with Let's Encrypt; build and
-runtime logs; docker containers and remote servers. Anything not covered by the curated tools is
-reachable through `api_find` and `dokploy_api`, which together expose all 554 Dokploy endpoints
-with their real parameter schemas.
+## Narrowing permissions
 
-Five playbooks (`deploy`, `troubleshoot`, `database`, `template`, `domains`) teach the assistant
-how Dokploy actually behaves, so it stops guessing about build logs versus runtime logs, container
-ports versus published ports, and internal database networking.
+By default every tool is exposed. Restrict the surface with `--scopes` or `DOKPLOY_SCOPES`:
 
-## Connecting without sharing a key
+```bash
+npx -y dokploy-rest --scopes "read,deploy"
+```
 
-If you would rather not paste an API key, use the hosted connector at
-[dokploy.rest](https://dokploy.rest): you sign in to your own panel through an OAuth screen and it
-creates a scoped key for you.
+| Scope | Unlocks |
+|---|---|
+| `read` | listing and inspecting everything, logs, the API catalog |
+| `deploy` | deploy, restart, stop, environment variables, sources and builds |
+| `create` | new projects, environments, applications, stacks, databases, domains |
+| `delete` | removing services, projects, domains, mounts, ports |
+| `admin` | `dokploy_api` POST calls to any endpoint |
 
-## License
+## All options
 
-Apache 2.0. Source at [github.com/danbenba/dokploy-mcp](https://github.com/danbenba/dokploy-mcp).
+```
+--url <url>          Address of your Dokploy panel (or DOKPLOY_URL)
+--api-key <keys>     One or more API keys, comma separated (or DOKPLOY_API_KEY)
+--scopes <list>      Limit the tools exposed (or DOKPLOY_SCOPES)
+--version            Print the version and exit
+--help               Print this help and exit
+```
+
+## Source
+
+Part of [danbenba/dokploy-mcp](https://github.com/danbenba/dokploy-mcp), Apache 2.0.
 Not affiliated with Dokploy Technology, Inc.

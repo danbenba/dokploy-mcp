@@ -1,10 +1,11 @@
 {
-  "name": "dokploy-mcp",
-  "version": "0.1.0",
-  "description": "MCP server for Dokploy: give Claude or ChatGPT control of your self-hosted Dokploy panel over stdio.",
+  "name": "dokploy-rest",
+  "version": "0.2.0",
+  "description": "Dokploy MCP: give Claude, ChatGPT or any MCP client control of your self-hosted Dokploy panel over stdio.",
   "license": "Apache-2.0",
   "type": "module",
   "bin": {
+    "dokploy-rest": "dist/cli.js",
     "dokploy-mcp": "dist/cli.js"
   },
   "main": "dist/cli.js",
@@ -12,6 +13,9 @@
     "dist",
     "README.md"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "engines": {
     "node": ">=20"
   },
@@ -22,7 +26,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@dokploy-mcp/core": "*",
     "@modelcontextprotocol/sdk": "^1.30.0",
     "zod": "^4.4.3"
   },
@@ -31,22 +34,29 @@
     "tsup": "^8.3.5",
     "tsx": "^4.19.2",
     "typescript": "~5.8",
-    "vitest": "^2.1.8"
+    "vitest": "^2.1.8",
+    "@dokploy-mcp/core": "*"
   },
   "keywords": [
     "dokploy",
     "mcp",
     "model-context-protocol",
+    "mcp-server",
     "claude",
     "chatgpt",
     "devops",
     "paas",
-    "deployment"
+    "deployment",
+    "docker",
+    "traefik"
   ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/danbenba/dokploy-mcp.git",
     "directory": "apps/cli"
+  },
+  "bugs": {
+    "url": "https://github.com/danbenba/dokploy-mcp/issues"
   },
   "homepage": "https://dokploy.rest"
 }

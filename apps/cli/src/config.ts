@@ -2,7 +2,7 @@ import { ALL_SCOPES, normalizeBaseUrl, sanitizeScopes, type Scope } from '@dokpl
 
 export interface CliOptions {
   dokployUrl: string
-  apiKey: string
+  apiKeys: string[]
   scopes: Scope[]
 }
 
@@ -41,39 +41,43 @@ export function parseArguments(argv: string[]): Record<string, string> {
   return parsed
 }
 
+export function splitList(value: string): string[] {
+  return [...new Set(value.split(/[\s,+]+/).map((item) => item.trim()).filter(Boolean))]
+}
+
 export function resolveOptions(argv: string[]): CliOptions {
   const flags = parseArguments(argv)
 
   const url = flags.url ?? readEnv('DOKPLOY_URL')
-  const apiKey = flags['api-key'] ?? readEnv('DOKPLOY_API_KEY')
+  const rawKeys = flags['api-key'] ?? readEnv('DOKPLOY_API_KEY')
 
   if (!url) {
     throw new ConfigurationError(
       'Missing the Dokploy panel address. Set DOKPLOY_URL or pass --url https://panel.example.com'
     )
   }
-  if (!apiKey) {
+  const apiKeys = rawKeys ? splitList(rawKeys) : []
+  if (apiKeys.length === 0) {
     throw new ConfigurationError(
       'Missing the Dokploy API key. Set DOKPLOY_API_KEY or pass --api-key, after generating one in Dokploy under Settings, then API Keys.'
     )
   }
 
   const requested = flags.scopes ?? readEnv('DOKPLOY_SCOPES')
-  const scopes = requested
-    ? sanitizeScopes(requested.split(/[\s,+]+/).filter(Boolean))
-    : ([...ALL_SCOPES] as Scope[])
+  const scopes = requested ? sanitizeScopes(splitList(requested)) : ([...ALL_SCOPES] as Scope[])
 
-  return { dokployUrl: normalizeBaseUrl(url), apiKey, scopes }
+  return { dokployUrl: normalizeBaseUrl(url), apiKeys, scopes }
 }
 
-export const HELP_TEXT = `dokploy-mcp — Model Context Protocol server for Dokploy
+export const HELP_TEXT = `dokploy-rest — Model Context Protocol server for Dokploy
 
 Usage
-  dokploy-mcp [options]
+  dokploy-rest [options]
 
 Options
   --url <url>          Address of your Dokploy panel (or DOKPLOY_URL)
-  --api-key <key>      API key from Dokploy, Settings then API Keys (or DOKPLOY_API_KEY)
+  --api-key <keys>     API key from Dokploy, Settings then API Keys (or DOKPLOY_API_KEY).
+                       Pass several keys separated by commas to reach several organizations.
   --scopes <list>      Limit the tools exposed to the assistant. Defaults to every scope.
                        Available: ${ALL_SCOPES.join(', ')}
   --version            Print the version and exit
@@ -85,14 +89,14 @@ Claude Code
   claude mcp add dokploy \\
     -e DOKPLOY_URL=https://panel.example.com \\
     -e DOKPLOY_API_KEY=your-key \\
-    -- npx -y dokploy-mcp
+    -- npx -y dokploy-rest
 
 Claude Desktop, in claude_desktop_config.json
   {
     "mcpServers": {
       "dokploy": {
         "command": "npx",
-        "args": ["-y", "dokploy-mcp"],
+        "args": ["-y", "dokploy-rest"],
         "env": {
           "DOKPLOY_URL": "https://panel.example.com",
           "DOKPLOY_API_KEY": "your-key"
@@ -102,5 +106,6 @@ Claude Desktop, in claude_desktop_config.json
   }
 
 To connect a panel without handing over an API key, use the hosted connector at
-https://dokploy.rest instead: it signs you in and creates a scoped key for you.
+https://dokploy.rest instead: it signs you in, lets you pick your organizations and
+creates a scoped key for each of them.
 `

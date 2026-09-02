@@ -9,12 +9,12 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build -w packages/core && npm run build -w apps/web",
-    "dev:mcp": "npm run dev -w apps/mcp",
+    "build": "npm run build -w packages/core && npm run build -w apps/web && npm run build -w apps/cli",
+    "build:core": "npm run build -w packages/core",
+    "dev:api": "npm run dev -w apps/api",
     "dev:web": "npm run dev -w apps/web",
-    "test": "npm run test -w apps/mcp",
-    "typecheck": "npm run typecheck -w apps/mcp && npm run typecheck -w apps/web",
-    "build:core": "npm run build -w packages/core"
+    "test": "npm run test -w apps/api && npm run test -w apps/cli",
+    "typecheck": "npm run typecheck -w packages/core && npm run typecheck -w apps/api && npm run typecheck -w apps/cli && npm run typecheck -w apps/web"
   },
   "engines": {
     "node": ">=20"

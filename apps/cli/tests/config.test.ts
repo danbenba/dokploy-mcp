@@ -53,7 +53,7 @@ describe('option resolution', () => {
     process.env.DOKPLOY_API_KEY = 'secret'
     const options = resolveOptions([])
     expect(options.dokployUrl).toBe('https://panel.example.com')
-    expect(options.apiKey).toBe('secret')
+    expect(options.apiKeys).toEqual(['secret'])
   })
 
   it('lets flags override the environment', () => {
@@ -61,7 +61,12 @@ describe('option resolution', () => {
     process.env.DOKPLOY_API_KEY = 'from-env'
     const options = resolveOptions(['--url', 'https://from-flag.example.com', '--api-key', 'from-flag'])
     expect(options.dokployUrl).toBe('https://from-flag.example.com')
-    expect(options.apiKey).toBe('from-flag')
+    expect(options.apiKeys).toEqual(['from-flag'])
+  })
+
+  it('accepts several api keys separated by commas', () => {
+    const options = resolveOptions(['--url', 'https://panel.example.com', '--api-key', 'k1, k2,k1'])
+    expect(options.apiKeys).toEqual(['k1', 'k2'])
   })
 
   it('normalizes a url pasted with a trailing api segment', () => {
