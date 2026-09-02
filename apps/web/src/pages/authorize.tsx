@@ -1,20 +1,25 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
-import { Building2, ChevronDown, Server, ShieldCheck } from 'lucide-react'
+import { Bot, Building2, ChevronDown, Server } from 'lucide-react'
 import claudeLogo from '@/assets/brands/claude.png'
 import chatgptLogo from '@/assets/brands/chatgpt.png'
 import { OnboardingLayout } from '@/components/onboarding-layout'
 import { AlertBlock } from '@/components/alert-block'
 import { Logo } from '@/components/logo'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { AuthorizeSkeleton } from '@/components/authorize/authorize-skeleton'
 import { PermissionsList } from '@/components/authorize/permissions-list'
 import { SlideToAuthorize, type SlideStatus } from '@/components/authorize/slide-to-authorize'
 import { SuccessCheck } from '@/components/authorize/success-check'
 import { ApiError, api, type FlowState } from '@/lib/api'
-import { cn } from '@/lib/utils'
 
 const ALL = '__all__'
 
@@ -43,6 +48,7 @@ export function AuthorizePage() {
   const [error, setError] = useState<string | null>(null)
   const [status, setStatus] = useState<SlideStatus>('idle')
   const [leaving, setLeaving] = useState(false)
+  const [confirmLogout, setConfirmLogout] = useState(false)
 
   useEffect(() => {
     if (!flowParam) {
@@ -144,6 +150,7 @@ export function AuthorizePage() {
   }
 
   const onLogout = async () => {
+    setConfirmLogout(false)
     setError(null)
     setLeaving(true)
     try {
@@ -157,7 +164,7 @@ export function AuthorizePage() {
 
   if (bootError) {
     return (
-      <OnboardingLayout centered>
+      <OnboardingLayout>
         <div className="flex flex-col items-center gap-3 text-center">
           <Logo className="size-12" />
           <h1 className="text-2xl font-semibold tracking-tight">Dokploy MCP</h1>
@@ -169,7 +176,7 @@ export function AuthorizePage() {
 
   if (!flow || leaving) {
     return (
-      <OnboardingLayout centered>
+      <OnboardingLayout>
         <AuthorizeSkeleton />
       </OnboardingLayout>
     )
@@ -187,29 +194,44 @@ export function AuthorizePage() {
   const busy = status !== 'idle'
 
   return (
-    <OnboardingLayout centered>
+    <OnboardingLayout footer="You can revoke this access at any time by deleting the API keys in your Dokploy panel.">
       <motion.div {...fade(0)} className="flex flex-col items-center gap-4 text-center">
         <div className="flex items-center gap-3">
-          <img
-            src={claudeLogo}
-            alt="Claude"
-            width={48}
-            height={48}
-            className={cn(
-              'size-12 rounded-2xl border bg-white p-2 shadow-sm transition-all',
-              kind === 'chatgpt' ? 'opacity-40 grayscale' : ''
-            )}
+          {kind === 'chatgpt' ? (
+            <img
+              src={chatgptLogo}
+              alt="ChatGPT"
+              width={52}
+              height={52}
+              className="size-13 rounded-2xl border shadow-sm"
+            />
+          ) : kind === 'claude' ? (
+            <img
+              src={claudeLogo}
+              alt="Claude"
+              width={52}
+              height={52}
+              className="size-13 rounded-2xl border bg-white p-2.5 shadow-sm"
+            />
+          ) : (
+            <span className="flex size-13 items-center justify-center rounded-2xl border bg-card shadow-sm">
+              <Bot className="size-6 text-muted-foreground" />
+            </span>
+          )}
+          <motion.span
+            aria-hidden="true"
+            className="h-[3px] w-14 text-muted-foreground/70"
+            style={{
+              backgroundImage: 'radial-gradient(circle, currentColor 1.5px, transparent 1.6px)',
+              backgroundSize: '9px 3px',
+              backgroundRepeat: 'repeat-x',
+            }}
+            animate={reduced ? undefined : { backgroundPositionX: ['0px', '18px'] }}
+            transition={{ duration: 1.2, ease: 'linear', repeat: Infinity }}
           />
-          <img
-            src={chatgptLogo}
-            alt="ChatGPT"
-            width={48}
-            height={48}
-            className={cn(
-              'size-12 rounded-2xl border shadow-sm transition-all',
-              kind === 'claude' ? 'opacity-40 grayscale' : ''
-            )}
-          />
+          <span className="flex size-13 items-center justify-center rounded-2xl border bg-card shadow-sm">
+            <Logo className="size-8" />
+          </span>
         </div>
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold tracking-tight text-balance">
@@ -252,7 +274,12 @@ export function AuthorizePage() {
             <p className="truncate text-sm font-medium">{account?.name}</p>
             <p className="truncate text-xs text-muted-foreground">{account?.email}</p>
           </div>
-          <Button variant="outline" size="sm" onClick={onLogout} disabled={busy}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setConfirmLogout(true)}
+            disabled={busy}
+          >
             Not you?
           </Button>
         </div>
@@ -262,13 +289,7 @@ export function AuthorizePage() {
               <Server className="size-3.5" />
               Server
             </dt>
-            <dd className="flex items-center gap-2 truncate font-medium">
-              {flow.instance?.host}
-              <Badge variant="secondary" className="gap-1">
-                <ShieldCheck className="size-3" />
-                Verified
-              </Badge>
-            </dd>
+            <dd className="truncate font-medium">{flow.instance?.host}</dd>
           </div>
           <div className="flex items-center justify-between gap-3">
             <dt className="text-muted-foreground">Signed in with</dt>
@@ -279,13 +300,30 @@ export function AuthorizePage() {
         </dl>
         <button
           type="button"
-          onClick={onLogout}
+          onClick={() => setConfirmLogout(true)}
           disabled={busy}
           className="mt-3 text-xs text-muted-foreground underline-offset-4 hover:underline disabled:opacity-60"
         >
           Use another account
         </button>
       </motion.div>
+
+      <Dialog open={confirmLogout} onOpenChange={setConfirmLogout}>
+        <DialogContent>
+          <DialogTitle>Switch account?</DialogTitle>
+          <DialogDescription>
+            You will be signed out of {flow.instance?.host} and taken back to the login step. The
+            request from {flow.client.name} stays open, so you can sign in with another account
+            and continue.
+          </DialogDescription>
+          <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <DialogClose asChild>
+              <Button variant="outline">Stay signed in</Button>
+            </DialogClose>
+            <Button onClick={onLogout}>Sign out and switch</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {organizations.length > 0 ? (
         <motion.div {...fade(0.14)} className="space-y-2">
@@ -348,7 +386,7 @@ export function AuthorizePage() {
         </AnimatePresence>
       </motion.div>
 
-      <motion.div {...fade(0.3)} className="flex flex-col items-center gap-2">
+      <motion.div {...fade(0.3)} className="flex flex-col items-center">
         <button
           type="button"
           onClick={onDeny}
@@ -357,9 +395,6 @@ export function AuthorizePage() {
         >
           Cancel and go back to {flow.client.name}
         </button>
-        <p className="text-center text-xs text-muted-foreground">
-          You can revoke this access at any time by deleting the API keys in your Dokploy panel.
-        </p>
       </motion.div>
     </OnboardingLayout>
   )
