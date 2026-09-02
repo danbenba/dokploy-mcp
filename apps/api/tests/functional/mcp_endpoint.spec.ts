@@ -254,3 +254,23 @@ test.group('mcp protocol handshake', () => {
     assert.deepEqual(payload.granted_scopes, ['read'])
   })
 })
+
+test.group('cli credentials endpoint', () => {
+  test('returns the panel and api keys carried by the access token', async ({ client, assert }) => {
+    const token = await tokenFor(['read', 'deploy'])
+    const response = await client
+      .post('/cli/credentials')
+      .header('authorization', `Bearer ${token}`)
+    response.assertStatus(200)
+    const body = response.body()
+    assert.equal(body.url, 'https://panel.example.com')
+    assert.deepEqual(body.scopes, ['read', 'deploy'])
+    assert.equal(body.organizations[0].apiKey, 'test-api-key')
+    assert.equal(body.account.email, 'ada@example.com')
+  })
+
+  test('refuses an anonymous call', async ({ client }) => {
+    const response = await client.post('/cli/credentials')
+    response.assertStatus(401)
+  })
+})

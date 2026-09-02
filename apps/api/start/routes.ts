@@ -5,6 +5,7 @@ const MetadataController = () => import('#controllers/metadata_controller')
 const OauthController = () => import('#controllers/oauth_controller')
 const FlowController = () => import('#controllers/flow_controller')
 const McpController = () => import('#controllers/mcp_controller')
+const CliController = () => import('#controllers/cli_controller')
 
 router.get('/', [MetadataController, 'index'])
 router.get('/health', [MetadataController, 'health'])
@@ -42,6 +43,8 @@ router
   })
   .prefix('/flow')
   .use(middleware.rateLimit())
+
+router.post('/cli/credentials', [CliController, 'credentials']).use(middleware.mcpAuth())
 
 router.post('/mcp', [McpController, 'handle']).use(middleware.mcpAuth())
 router.get('/mcp', [McpController, 'unsupported']).use(middleware.mcpAuth())
