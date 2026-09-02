@@ -28,9 +28,9 @@ const CAPABILITIES = [
   },
   {
     icon: ShieldCheck,
-    title: 'Permissions you choose',
+    title: 'Permissions and organizations you choose',
     description:
-      'Read, deploy, create, delete and full API access are granted one by one on the consent screen, and enforced on every call.',
+      'Read, deploy, create, delete and full API access are granted one by one on the consent screen, for any combination of your organizations, and enforced on every call.',
   },
 ]
 
@@ -44,8 +44,8 @@ const INSTALL_MODES = [
   {
     icon: Terminal,
     title: 'npm package',
-    description: 'Run it next to your assistant, authenticated by an API key you already own.',
-    command: 'claude mcp add dokploy -- npx -y dokploy-mcp',
+    description: 'Run it next to your assistant, authenticated by API keys you already own. Published on npm as dokploy-rest.',
+    command: 'claude mcp add dokploy -- npx -y dokploy-rest',
   },
   {
     icon: Boxes,
@@ -116,7 +116,7 @@ export function LandingPage() {
           <h2 className="text-2xl font-semibold tracking-tight">Three ways to connect</h2>
           <p className="mt-2 text-muted-foreground">
             The hosted connector never stores your panel credentials: it exchanges them for a
-            scoped API key created on your own instance.
+            scoped API key created on your own instance, one per organization you select.
           </p>
           <div className="mt-8 grid gap-4 lg:grid-cols-3">
             {INSTALL_MODES.map((mode) => (

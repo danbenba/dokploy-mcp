@@ -32,10 +32,11 @@ a domain points at the container's listen port, databases talk over `dokploy-net
 
 ### 1. Hosted connector
 
-Add `https://mcp.dokploy.rest/mcp` as a custom connector in Claude or ChatGPT. You are sent to
+Add `https://mcp.dokploy.rest` as a custom connector in Claude or ChatGPT. You are sent to
 [dokploy.rest](https://dokploy.rest), you enter the address of **your** panel, sign in, choose the
-permissions, and you are back in the assistant. The connector never keeps your password: it
-exchanges it for an API key created on your own instance.
+organizations and the permissions, and you are back in the assistant. The connector never keeps
+your password: it exchanges it for one API key per selected organization, created on your own
+instance.
 
 ### 2. Self-hosted
 
@@ -58,16 +59,18 @@ user of that deployment will authenticate against that instance only.
 
 ### 3. npm package
 
-For a local assistant that already has an API key, skip OAuth entirely:
+For a local assistant that already has an API key, skip OAuth entirely with the
+[`dokploy-rest`](https://www.npmjs.com/package/dokploy-rest) package:
 
 ```bash
 claude mcp add dokploy \
   -e DOKPLOY_URL=https://panel.example.com \
   -e DOKPLOY_API_KEY=your-key \
-  -- npx -y dokploy-mcp
+  -- npx -y dokploy-rest
 ```
 
-See [apps/cli/README.md](apps/cli/README.md) for Claude Desktop, scope narrowing and all flags.
+Pass several keys separated by commas to reach several organizations. See
+[apps/cli/README.md](apps/cli/README.md) for Claude Desktop, scope narrowing and all flags.
 
 ## How the authorization flow works
 
@@ -77,8 +80,8 @@ Claude                 mcp.dokploy.rest              dokploy.rest              y
   │─ POST /oauth/register ──▶│                            │                        │
   │─ GET  /oauth/authorize ─▶│─ redirect /login?flow=… ──▶│                        │
   │                          │◀─ POST /flow/verify ───────│─ GET /api/health ─────▶│
-  │                          │◀─ POST /flow/login ────────│─ sign-in, create key ─▶│
-  │                          │◀─ POST /flow/consent ──────│                        │
+  │                          │◀─ POST /flow/login ────────│─ sign-in ─────────────▶│
+  │                          │◀─ POST /flow/consent ──────│─ one key per org ─────▶│
   │◀── redirect ?code=… ─────│                            │                        │
   │─ POST /oauth/token ─────▶│                            │                        │
   │─ POST /mcp (Bearer) ────▶│──────── x-api-key ─────────────────────────────────▶│
@@ -95,18 +98,18 @@ the panel URL and its API key never sit in a store the server operator can read 
 
 - Panel addresses are verified before any credential is sent: DNS resolution, a public-address
   guard against SSRF, then two probes that confirm the host really is a Dokploy panel.
-- Passwords are relayed once to the panel you named, exchanged for an API key, and never stored.
+- Passwords are relayed once to the panel you named, exchanged for one API key per organization you selected, and never stored.
 - Permissions are enforced twice: tools outside the granted scopes are not even listed, and every
   handler re-checks before touching the API.
 - Destructive tools require an explicit confirmation argument on top of the `delete` scope.
-- Revoking access is a single click in your own panel: delete the API key.
+- Revoking access is a single click in your own panel: delete the API keys.
 
 ## Repository layout
 
 ```
 apps/api      AdonisJS server: MCP endpoint, OAuth authorization server, login flow API
 apps/web      Vite + React: landing page, login and consent screens
-apps/cli      npm package published as dokploy-mcp, stdio transport
+apps/cli      npm package published as dokploy-rest, stdio transport
 packages/core Shared core: Dokploy client, panel verification, endpoint catalog, tool surface
 ```
 
@@ -124,7 +127,7 @@ npm run dev -w apps/web                  # http://localhost:5173
 Tests:
 
 ```bash
-npm run test -w apps/api    # 91 unit and functional tests
+npm run test -w apps/api    # 97 unit and functional tests
 npm run test -w apps/cli    # cli option resolution
 ```
 
