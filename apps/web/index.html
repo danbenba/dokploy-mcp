@@ -9,11 +9,11 @@
     <title>Dokploy MCP — Let Claude run your Dokploy panel</title>
     <meta
       name="description"
-      content="Open-source Model Context Protocol server connecting Claude and ChatGPT to your self-hosted Dokploy panel. Hosted connector, npm package dokploy-rest, or self-hosted."
+      content="Open-source MCP server that lets Claude, ChatGPT, Cursor or VS Code deploy, debug and manage your self-hosted Dokploy panel. Hosted connector or npx dokploy-rest."
     />
     <meta
       name="keywords"
-      content="dokploy, mcp, model context protocol, mcp server, claude, chatgpt, devops, paas, deployment, docker, traefik"
+      content="dokploy mcp, dokploy, mcp server, model context protocol, claude connector, chatgpt connector, cursor mcp, vs code mcp, dokploy-rest, devops, paas, docker, traefik"
     />
     <link rel="canonical" href="https://dokploy.rest/" />
     <meta property="og:type" content="website" />
@@ -48,6 +48,39 @@
         "sameAs": [
           "https://github.com/danbenba/dokploy-mcp",
           "https://www.npmjs.com/package/dokploy-rest"
+        ]
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Does the connector store my Dokploy password?",
+            "acceptedAnswer": { "@type": "Answer", "text": "No. Your password is sent once to the panel you named, exchanged for an API key created on that panel, and never kept. Tokens are encrypted and carry the connection themselves; there is no database." }
+          },
+          {
+            "@type": "Question",
+            "name": "Which assistants and editors are supported?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Any client that speaks the Model Context Protocol. The hosted connector works with Claude and ChatGPT. The npm package works with Claude Code, Claude Desktop, Cursor, Windsurf, VS Code, Zed and other stdio clients." }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I limit what the assistant is allowed to do?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Yes. Permissions are chosen when you connect: read, deploy, create, delete and full API access. Destructive tools also require an explicit confirmation." }
+          },
+          {
+            "@type": "Question",
+            "name": "How do I revoke access?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Delete the API key in your Dokploy panel under Settings, then API Keys. The connection stops working immediately." }
+          },
+          {
+            "@type": "Question",
+            "name": "Is it affiliated with Dokploy?",
+            "acceptedAnswer": { "@type": "Answer", "text": "No. Dokploy MCP is an independent, open-source integration released under the Apache 2.0 license. Dokploy is made by Dokploy Technology, Inc." }
+          }
         ]
       }
     </script>
