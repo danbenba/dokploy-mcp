@@ -296,6 +296,14 @@ export async function fetchAccountWithSession(
   return toAccount(user, role, active, listOrganizations(entries, active))
 }
 
+export async function signOut(baseUrl: string, cookies: string): Promise<void> {
+  try {
+    await authFetch(baseUrl, '/api/auth/sign-out', { method: 'POST', body: {}, cookies })
+  } catch {
+    return
+  }
+}
+
 export async function fetchAvatarWithSession(
   baseUrl: string,
   cookies: string
@@ -325,8 +333,9 @@ export async function createApiKeyWithSession(
     )
   }
   const body: Record<string, unknown> = {
-    name: keyName.slice(0, 32),
+    name: keyName.trim().slice(0, 32),
     metadata: { organizationId },
+    rateLimitEnabled: false,
   }
   const { response, text } = await authFetch(baseUrl, '/api/user.createApiKey', {
     method: 'POST',

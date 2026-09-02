@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto'
 import { test } from '@japa/runner'
 import config from '#config/dokploy_mcp'
 import { resetRateLimits } from '#middleware/rate_limit_middleware'
+import { sealRefresh } from '#oauth/tokens'
 
 const REDIRECT_URI = 'https://claude.ai/api/mcp/auth_callback'
 const VERIFIER = 'pkce-verifier-used-by-the-functional-suite-0123456789'
@@ -231,5 +232,54 @@ test.group('login flow api', (group) => {
     assert.equal(target.origin + target.pathname, REDIRECT_URI)
     assert.equal(target.searchParams.get('error'), 'access_denied')
     assert.equal(target.searchParams.get('state'), 'state-123')
+  })
+})
+
+test.group('refresh token rotation', (group) => {
+  group.each.setup(() => resetRateLimits())
+
+  const connection = {
+    url: 'https://panel.example.com',
+    host: 'panel.example.com',
+    apiKey: 'secret-api-key',
+    account: {
+      name: 'Ada',
+      email: 'ada@example.com',
+      image: null,
+      role: 'owner',
+      organizationId: 'org-1',
+      organizationName: 'Acme',
+      organizations: [{ id: 'org-1', name: 'Acme' }],
+    },
+    method: 'credentials' as const,
+    organizations: [{ id: 'org-1', name: 'Acme', apiKey: 'secret-api-key' }],
+  }
+
+  test('a concurrent retry of the same refresh token gets the same grant', async ({
+    client,
+    assert,
+  }) => {
+    const refreshToken = await sealRefresh({
+      clientId: 'client-1',
+      scopes: ['read'],
+      connection,
+      sessionId: 'session-1',
+    })
+    const first = await client
+      .post('/oauth/token')
+      .form({ grant_type: 'refresh_token', refresh_token: refreshToken })
+    first.assertStatus(200)
+    const second = await client
+      .post('/oauth/token')
+      .form({ grant_type: 'refresh_token', refresh_token: refreshToken })
+    second.assertStatus(200)
+    assert.equal(second.body().access_token, first.body().access_token)
+    assert.equal(second.body().refresh_token, first.body().refresh_token)
+
+    const rotated = await client
+      .post('/oauth/token')
+      .form({ grant_type: 'refresh_token', refresh_token: first.body().refresh_token })
+    rotated.assertStatus(200)
+    assert.notEqual(rotated.body().refresh_token, first.body().refresh_token)
   })
 })

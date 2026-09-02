@@ -30,6 +30,7 @@ export {
   fetchAvatarWithApiKey,
   fetchAvatarWithSession,
   signInWithEmail,
+  signOut,
   verifyBackupCode,
   verifyTotpCode,
   type CredentialSession,
