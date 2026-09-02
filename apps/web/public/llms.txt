@@ -1,0 +1,34 @@
+# Dokploy MCP
+
+> Open-source Model Context Protocol (MCP) server that lets Claude, ChatGPT or any MCP client operate a self-hosted Dokploy panel: projects, environments, applications, compose stacks, databases, domains, deployments and logs.
+
+Website: https://dokploy.rest
+Source: https://github.com/danbenba/dokploy-mcp (Apache 2.0)
+npm: https://www.npmjs.com/package/dokploy-rest
+
+## Hosted connector (OAuth 2.1, no API key to paste)
+
+Add `https://mcp.dokploy.rest` as a custom connector in Claude or ChatGPT. The user is sent to https://dokploy.rest, enters the address of their own Dokploy panel, signs in there, picks the organizations and permissions to grant, and slides to authorize. One scoped API key is created per selected organization on the user's own instance; passwords are never stored.
+
+Discovery: RFC 8414 (`/.well-known/oauth-authorization-server`), RFC 9728 (`/.well-known/oauth-protected-resource`), RFC 7591 dynamic client registration, PKCE S256 required. MCP endpoint: `https://mcp.dokploy.rest/mcp` (Streamable HTTP, stateless, POST only).
+
+## npm package (stdio)
+
+```bash
+claude mcp add dokploy \
+  -e DOKPLOY_URL=https://panel.example.com \
+  -e DOKPLOY_API_KEY=your-key \
+  -- npx -y dokploy-rest
+```
+
+Options: `--url`, `--api-key` (several keys separated by commas, one per organization), `--scopes read,deploy,create,delete,admin`. Also works with Claude Desktop, Cursor, Windsurf, Zed and any stdio MCP client.
+
+## Self-hosted
+
+`docker run -p 3333:3333 ghcr.io/danbenba/dokploy-mcp` or `docker compose up -d` from the repository; set `PUBLIC_URL`, `WEB_URL`, `APP_KEY`, `TOKEN_SECRET`, optionally `DOKPLOY_LOCKED_URL`.
+
+## Tools
+
+Curated tools for projects, applications, compose, databases, domains, deployments, containers, storage, routing, schedules and backups, plus `api_find` (search all Dokploy endpoints with exact schemas) and `dokploy_api` (call any endpoint). Five playbooks: deploy, troubleshoot, database, template, domains. Tools are gated by the scopes granted at connection time.
+
+Not affiliated with Dokploy Technology, Inc. Claude is a trademark of Anthropic, ChatGPT of OpenAI.
