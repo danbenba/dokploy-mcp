@@ -1,0 +1,49 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.danbenba/dokploy-mcp",
+  "description": "Run your self-hosted Dokploy panel from Claude or ChatGPT: projects, apps, compose, databases, domains, deployments and logs.",
+  "title": "Dokploy MCP",
+  "repository": {
+    "url": "https://github.com/danbenba/dokploy-mcp",
+    "source": "github"
+  },
+  "websiteUrl": "https://dokploy.rest",
+  "version": "0.2.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "dokploy-rest",
+      "version": "0.2.0",
+      "runtimeHint": "npx",
+      "transport": { "type": "stdio" },
+      "environmentVariables": [
+        {
+          "name": "DOKPLOY_URL",
+          "description": "Address of your Dokploy panel, for example https://panel.example.com",
+          "isRequired": true,
+          "format": "string"
+        },
+        {
+          "name": "DOKPLOY_API_KEY",
+          "description": "API key generated in Dokploy under Settings then API Keys. Several keys separated by commas reach several organizations.",
+          "isRequired": true,
+          "isSecret": true,
+          "format": "string"
+        },
+        {
+          "name": "DOKPLOY_SCOPES",
+          "description": "Optional comma separated list among read, deploy, create, delete, admin. Every scope when omitted.",
+          "isRequired": false,
+          "format": "string"
+        }
+      ]
+    }
+  ],
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.dokploy.rest/mcp"
+    }
+  ]
+}
