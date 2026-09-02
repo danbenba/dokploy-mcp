@@ -8,6 +8,8 @@ export interface ScopeDefinition {
 export interface FlowOrganization {
   id: string
   name: string | null
+  logo?: string | null
+  isDefault?: boolean
 }
 
 export interface FlowAccount {

@@ -128,11 +128,23 @@ function Container({ children, className }: { children: ReactNode; className?: s
   return <div className={cn('mx-auto w-full max-w-[1100px] px-6', className)}>{children}</div>
 }
 
-function SectionTitle({ eyebrow, title, body }: { eyebrow?: string; title: string; body?: string }) {
+function SectionTitle({
+  id,
+  eyebrow,
+  title,
+  body,
+}: {
+  id?: string
+  eyebrow?: string
+  title: string
+  body?: string
+}) {
   return (
     <Reveal className="max-w-2xl">
       {eyebrow ? <p className="text-sm font-medium text-muted-foreground">{eyebrow}</p> : null}
-      <h2 className="mt-2 text-3xl font-semibold tracking-tight text-balance sm:text-4xl">{title}</h2>
+      <h2 id={id} className="mt-2 text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
+        {title}
+      </h2>
       {body ? <p className="mt-4 text-lg text-muted-foreground text-pretty">{body}</p> : null}
     </Reveal>
   )
@@ -247,7 +259,7 @@ export function LandingPage() {
 
         <section className="border-t py-20 sm:py-28" aria-labelledby="demo">
           <Container>
-            <SectionTitle
+            <SectionTitle id="demo"
               eyebrow="Watch it work"
               title="One sentence in Claude Code. A deployment on your panel."
               body="A real session: Claude lists your projects, triggers the deploy, follows the build and reports back, all through Dokploy MCP."
@@ -267,7 +279,7 @@ export function LandingPage() {
 
         <section className="border-t py-20 sm:py-28" aria-labelledby="features">
           <Container>
-            <SectionTitle
+            <SectionTitle id="features"
               eyebrow="What you can ask"
               title="Everything the panel does, in a sentence."
               body="The assistant works through Dokploy’s own HTTP API, with the permissions you granted and nothing more."
@@ -297,7 +309,7 @@ export function LandingPage() {
 
         <section className="border-t bg-muted/30 py-20 sm:py-28" aria-labelledby="how">
           <Container>
-            <SectionTitle
+            <SectionTitle id="how"
               eyebrow="How it works"
               title="Under a minute, and your password never leaves your panel."
             />
@@ -320,7 +332,7 @@ export function LandingPage() {
 
         <section id="connect" className="border-t py-20 sm:py-28" aria-labelledby="connect-title">
           <Container>
-            <SectionTitle
+            <SectionTitle id="connect-title"
               eyebrow="Three ways to connect"
               title="Hosted, local or yours."
               body="The hosted connector exchanges your sign-in for scoped API keys created on your own instance. The npm package and the self-hosted server give you the same tools with the keys you manage."
@@ -359,7 +371,7 @@ export function LandingPage() {
 
         <section id="faq" className="border-t bg-muted/30 py-20 sm:py-28" aria-labelledby="faq-title">
           <Container className="grid gap-12 lg:grid-cols-[1fr_2fr]">
-            <SectionTitle eyebrow="FAQ" title="Questions, answered." />
+            <SectionTitle id="faq-title" eyebrow="FAQ" title="Questions, answered." />
             <Reveal delay={0.1}>
               <dl className="divide-y rounded-xl border bg-card">
                 {FAQ.map((item) => (
