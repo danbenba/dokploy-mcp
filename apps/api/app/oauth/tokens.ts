@@ -87,6 +87,9 @@ const ISSUER = 'dokploy-mcp'
 
 const consumedIds = new Map<string, number>()
 const revokedSessions = new Map<string, number>()
+const recentRefreshes = new Map<string, { expiry: number; body: Record<string, unknown> }>()
+
+export const REFRESH_GRACE_SECONDS = 180
 
 function pruneStore(store: Map<string, number>, now: number): void {
   for (const [key, expiry] of store) {
@@ -120,9 +123,32 @@ export function isSessionRevoked(sessionId: string | undefined): boolean {
   return revokedSessions.has(sessionId)
 }
 
+export function rememberRefresh(jti: string, body: Record<string, unknown>): void {
+  const now = Date.now()
+  for (const [key, entry] of recentRefreshes) {
+    if (entry.expiry <= now) {
+      recentRefreshes.delete(key)
+    }
+  }
+  recentRefreshes.set(jti, { expiry: now + REFRESH_GRACE_SECONDS * 1000, body })
+}
+
+export function recallRefresh(jti: string): Record<string, unknown> | null {
+  const entry = recentRefreshes.get(jti)
+  if (!entry) {
+    return null
+  }
+  if (entry.expiry <= Date.now()) {
+    recentRefreshes.delete(jti)
+    return null
+  }
+  return entry.body
+}
+
 export function resetTokenStores(): void {
   consumedIds.clear()
   revokedSessions.clear()
+  recentRefreshes.clear()
 }
 
 function encryptionKey(): Uint8Array {

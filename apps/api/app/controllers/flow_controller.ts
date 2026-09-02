@@ -19,6 +19,7 @@ import {
   fetchAvatarWithApiKey,
   fetchAvatarWithSession,
   signInWithEmail,
+  signOut,
   verifyBackupCode,
   verifyTotpCode,
 } from '@dokploy-mcp/core'
@@ -196,6 +197,20 @@ export default class FlowController {
     return response.json(presentFlow(persisted.flow, persisted.token))
   }
 
+  async logout({ request, response }: HttpContext) {
+    const parsed = flowSchema.safeParse(request.body())
+    if (!parsed.success) {
+      return response.status(400).json({ error: 'invalid_request' })
+    }
+    const flow = await this.load(parsed.data.flow)
+    const cookies = flow.auth?.cookies ?? flow.pendingCookies
+    if (cookies && flow.pendingUrl) {
+      await signOut(flow.pendingUrl, cookies)
+    }
+    const persisted = await this.persist({ ...flow, auth: undefined, pendingCookies: undefined })
+    return response.json(presentFlow(persisted.flow, persisted.token))
+  }
+
   async avatar({ request, response }: HttpContext) {
     const parsed = flowSchema.safeParse(request.body())
     if (!parsed.success) {
@@ -281,7 +296,7 @@ export default class FlowController {
         const apiKey = await createApiKeyWithSession(
           instanceUrl,
           auth.cookies,
-          config.apiKeyLabel,
+          targets.length > 1 && target.name ? `${config.apiKeyLabel} ${target.name}` : config.apiKeyLabel,
           target.id
         )
         organizations.push({ id: target.id ?? 'default', name: target.name, apiKey })

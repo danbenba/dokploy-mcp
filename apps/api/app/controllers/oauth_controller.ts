@@ -16,6 +16,8 @@ import {
   openAccess,
   openCode,
   openRefresh,
+  recallRefresh,
+  rememberRefresh,
   revokeSession,
   sealAccess,
   sealFlow,
@@ -187,11 +189,17 @@ export default class OauthController {
         if (isSessionRevoked(payload.sessionId)) {
           return fail(400, 'invalid_grant', 'This grant has been revoked.')
         }
-        if (payload.jti && !consumeOnce(`refresh:${payload.jti}`, config.refreshTokenTtl)) {
-          if (payload.sessionId) {
-            revokeSession(payload.sessionId, config.refreshTokenTtl)
+        if (payload.jti) {
+          const replay = recallRefresh(payload.jti)
+          if (replay) {
+            return response.json(replay)
           }
-          return fail(400, 'invalid_grant', 'This refresh token has already been used.')
+          if (!consumeOnce(`refresh:${payload.jti}`, config.refreshTokenTtl)) {
+            if (payload.sessionId) {
+              revokeSession(payload.sessionId, config.refreshTokenTtl)
+            }
+            return fail(400, 'invalid_grant', 'This refresh token has already been used.')
+          }
         }
         const sessionId = payload.sessionId ?? randomUUID()
         const accessToken = await sealAccess({
@@ -206,13 +214,17 @@ export default class OauthController {
           connection: payload.connection,
           sessionId,
         })
-        return response.json({
+        const granted = {
           access_token: accessToken,
           token_type: 'Bearer',
           expires_in: config.accessTokenTtl,
           refresh_token: refreshToken,
           scope: formatScopeParam(payload.scopes),
-        })
+        }
+        if (payload.jti) {
+          rememberRefresh(payload.jti, granted)
+        }
+        return response.json(granted)
       }
 
       return fail(
