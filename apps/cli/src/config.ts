@@ -72,9 +72,17 @@ export function resolveOptions(argv: string[]): CliOptions {
 export const HELP_TEXT = `dokploy-rest — Model Context Protocol server for Dokploy
 
 Usage
-  dokploy-rest [options]
+  dokploy-rest install        Guided setup: sign in from the browser, then configure
+                              Claude Code, Claude Desktop, Cursor, Windsurf, VS Code,
+                              Zed, Gemini CLI and Codex in one go
+  dokploy-rest [options]      Run the MCP server over stdio (started by your assistant)
 
-Options
+Install options
+  --server <url>       Authorization server to sign in through (default https://mcp.dokploy.rest)
+  --url, --api-key     Skip the browser sign-in and use these credentials directly
+  --name <name>        Server entry name written into each assistant (default dokploy)
+
+Server options
   --url <url>          Address of your Dokploy panel (or DOKPLOY_URL)
   --api-key <keys>     API key from Dokploy, Settings then API Keys (or DOKPLOY_API_KEY).
                        Pass several keys separated by commas to reach several organizations.

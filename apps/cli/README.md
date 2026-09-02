@@ -12,7 +12,19 @@ Prefer not to handle API keys at all? Add `https://mcp.dokploy.rest` as a custom
 instead: [dokploy.rest](https://dokploy.rest) signs you in to your own panel, lets you pick the
 organizations to expose and creates a scoped key for each of them.
 
-## Setup
+## One-command setup
+
+```bash
+npx -y dokploy-rest install
+```
+
+The installer detects the assistants on your machine (Claude Code, Claude Desktop, Cursor,
+Windsurf, VS Code, Zed, Gemini CLI, Codex CLI), opens your browser so you sign in to your own
+Dokploy panel and pick the organizations to expose, then writes the server entry into every
+assistant you selected. Existing config files are merged, never overwritten, and a `.bak` copy is
+kept next to each one. Add `--url` and `--api-key` to skip the browser sign-in in scripts.
+
+## Manual setup
 
 Generate an API key in Dokploy under **Settings → API Keys**, then register the server with your
 assistant.
@@ -81,6 +93,8 @@ npx -y dokploy-rest --scopes "read,deploy"
 ## All options
 
 ```
+dokploy-rest install [--server <url>] [--url <url> --api-key <keys>] [--name <name>]
+
 --url <url>          Address of your Dokploy panel (or DOKPLOY_URL)
 --api-key <keys>     One or more API keys, comma separated (or DOKPLOY_API_KEY)
 --scopes <list>      Limit the tools exposed (or DOKPLOY_SCOPES)

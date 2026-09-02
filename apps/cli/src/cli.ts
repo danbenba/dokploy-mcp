@@ -8,6 +8,7 @@ import {
   type OrganizationCredential,
 } from '@dokploy-mcp/core'
 import { ConfigurationError, HELP_TEXT, resolveOptions } from './config.js'
+import { runInstall } from './install/index.js'
 
 const require = createRequire(import.meta.url)
 const VERSION: string = require('../package.json').version
@@ -22,6 +23,10 @@ async function identify(url: string, apiKey: string): Promise<DokployAccount> {
 }
 
 export async function main(argv: string[] = process.argv.slice(2)): Promise<void> {
+  if (argv[0] === 'install') {
+    await runInstall(argv.slice(1), VERSION)
+    return
+  }
   if (argv.includes('--help') || argv.includes('-h')) {
     process.stdout.write(HELP_TEXT)
     return
