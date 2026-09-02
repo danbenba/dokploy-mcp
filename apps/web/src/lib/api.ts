@@ -89,6 +89,7 @@ export const api = {
     post<FlowState>('/flow/second-factor', { flow, code, mode }),
   apiKey: (flow: string, apiKey: string) => post<FlowState>('/flow/api-key', { flow, api_key: apiKey }),
   avatar: (flow: string) => post<{ image: string | null }>('/flow/avatar', { flow }),
+  logout: (flow: string) => post<FlowState>('/flow/logout', { flow }),
   consent: (flow: string, scopes: string[], organizations?: string[]) =>
     post<{ redirect_to: string; granted_scopes: string[] }>('/flow/consent', {
       flow,

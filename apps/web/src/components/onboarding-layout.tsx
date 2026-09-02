@@ -5,11 +5,27 @@ import { Button } from '@/components/ui/button'
 interface OnboardingLayoutProps {
   children: ReactNode
   leftPanel?: ReactNode
+  centered?: boolean
 }
 
 const GITHUB_URL = 'https://github.com/danbenba/dokploy-mcp'
 
-export function OnboardingLayout({ children, leftPanel }: OnboardingLayoutProps) {
+export function OnboardingLayout({ children, leftPanel, centered = false }: OnboardingLayoutProps) {
+  if (centered) {
+    return (
+      <div className="relative mx-auto flex min-h-svh w-full flex-col items-center px-4">
+        <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center space-y-6 py-10">
+          {children}
+        </div>
+        <div className="mx-auto flex w-full max-w-md items-center justify-center pb-6 text-xs text-muted-foreground">
+          <a href="/" className="flex items-center gap-2 hover:text-foreground">
+            <Logo className="size-5" />
+            Dokploy MCP
+          </a>
+        </div>
+      </div>
+    )
+  }
   return (
     <div className="container relative mx-auto flex min-h-svh w-full flex-col items-center justify-center px-4 lg:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
       <div className="relative hidden h-full flex-col p-10 text-primary lg:flex dark:border-r">
