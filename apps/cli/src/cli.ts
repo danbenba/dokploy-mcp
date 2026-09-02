@@ -1,13 +1,16 @@
+import { createRequire } from 'node:module'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import {
-  DokployClient,
+  DokployOrgPool,
   createMcpServer,
   fetchAccountWithApiKey,
   type DokployAccount,
+  type OrganizationCredential,
 } from '@dokploy-mcp/core'
 import { ConfigurationError, HELP_TEXT, resolveOptions } from './config.js'
 
-const VERSION = '0.1.0'
+const require = createRequire(import.meta.url)
+const VERSION: string = require('../package.json').version
 
 async function identify(url: string, apiKey: string): Promise<DokployAccount> {
   try {
@@ -29,18 +32,37 @@ export async function main(argv: string[] = process.argv.slice(2)): Promise<void
   }
 
   const options = resolveOptions(argv)
-  const account = await identify(options.dokployUrl, options.apiKey)
+  const credentials: OrganizationCredential[] = []
+  let account: DokployAccount | null = null
+  for (const apiKey of options.apiKeys) {
+    const identity = await identify(options.dokployUrl, apiKey)
+    account ??= identity
+    const organizationId = identity.organizationId ?? `key-${credentials.length + 1}`
+    if (credentials.some((credential) => credential.id === organizationId)) {
+      continue
+    }
+    credentials.push({ id: organizationId, name: identity.organizationName, apiKey })
+  }
+  if (!account) {
+    throw new ConfigurationError('No usable API key was provided.')
+  }
 
+  const pool = new DokployOrgPool(options.dokployUrl, credentials)
+  const organizations = pool.organizations.map(({ id, name }) => ({ id, name }))
   process.stderr.write(
-    `dokploy-mcp ${VERSION} connected to ${options.dokployUrl} as ${account.email || account.name} ` +
+    `dokploy-rest ${VERSION} connected to ${options.dokployUrl} as ${account.email || account.name} ` +
+      `across ${organizations.length} organization${organizations.length > 1 ? 's' : ''} ` +
       `with scopes ${options.scopes.join(', ')}\n`
   )
 
-  const client = new DokployClient({ baseUrl: options.dokployUrl, apiKey: options.apiKey })
   const server = createMcpServer({
-    client,
+    client: pool,
+    organizations: pool.organizations,
     scopes: options.scopes,
-    account,
+    account: {
+      ...account,
+      organizations,
+    },
     instanceUrl: options.dokployUrl,
   })
 
@@ -56,6 +78,6 @@ export async function main(argv: string[] = process.argv.slice(2)): Promise<void
 
 main().catch((error: unknown) => {
   const message = error instanceof Error ? error.message : String(error)
-  process.stderr.write(`${message}\n\nRun dokploy-mcp --help for the available options.\n`)
+  process.stderr.write(`${message}\n\nRun dokploy-rest --help for the available options.\n`)
   process.exit(1)
 })
