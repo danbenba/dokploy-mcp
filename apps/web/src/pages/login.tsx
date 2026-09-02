@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { ArrowRight, Fingerprint, KeyRound, Loader2, Lock, Server } from 'lucide-react'
 import { OnboardingLayout } from '@/components/onboarding-layout'
+import { ShinyText } from '@/components/shiny-text'
 import { AlertBlock } from '@/components/alert-block'
 import { Logo } from '@/components/logo'
 import {
@@ -26,6 +28,35 @@ const FAILING_STEP: Record<string, number> = {
   dns: 0,
   unreachable: 1,
   not_dokploy: 2,
+}
+
+const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.07 } } }
+const item = {
+  hidden: { opacity: 0, y: 8 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.28, ease: 'easeOut' as const } },
+}
+
+function Thinking({ label }: { label: string }) {
+  const reduced = useReducedMotion()
+  return (
+    <div className="flex items-center justify-center gap-2 py-1 text-sm" role="status" aria-live="polite">
+      <span className="flex items-end gap-0.5" aria-hidden="true">
+        {[0, 1, 2].map((index) => (
+          <motion.span
+            key={index}
+            className="size-1 rounded-full bg-foreground/60"
+            animate={reduced ? undefined : { y: [0, -3, 0], opacity: [0.4, 1, 0.4] }}
+            transition={{ duration: 0.9, repeat: Infinity, delay: index * 0.15, ease: 'easeInOut' }}
+          />
+        ))}
+      </span>
+      {reduced ? (
+        <span className="text-muted-foreground">{label}</span>
+      ) : (
+        <ShinyText text={label} speed={1.8} color="#8a8a8a" shineColor="#ffffff" />
+      )}
+    </div>
+  )
 }
 
 function initialSteps(status: StepStatus = 'pending'): VerificationStep[] {
@@ -244,21 +275,38 @@ export function LoginPage() {
         ) : null}
       </div>
 
-      {error ? (
-        <AlertBlock type="error" className="my-2">
-          {error}
-        </AlertBlock>
-      ) : null}
+      <AnimatePresence initial={false}>
+        {error ? (
+          <motion.div
+            key="error"
+            initial={{ opacity: 0, y: -6, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.22 }}
+          >
+            <AlertBlock type="error" className="my-2">
+              {error}
+            </AlertBlock>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
 
       <CardContent className="p-0">
+        <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={!flow ? 'loading' : flow.stage === 'instance' ? 'instance' : flow.two_factor_pending ? 'totp' : 'auth'}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.24, ease: 'easeOut' }}
+        >
         {!flow ? (
-          <div className="flex items-center justify-center gap-2 py-10 text-muted-foreground">
-            <Loader2 className="size-4 animate-spin" />
-            Loading the authorization request
+          <div className="py-10">
+            <Thinking label="Preparing the secure connection" />
           </div>
         ) : flow.stage === 'instance' ? (
-          <form onSubmit={onVerify} className="space-y-4" id="instance-form">
-            <div className="space-y-2">
+          <motion.form onSubmit={onVerify} className="space-y-4" id="instance-form" variants={stagger} initial="hidden" animate="show">
+            <motion.div variants={item} className="space-y-2">
               <Label htmlFor="instance">Dokploy server URL</Label>
               <div className="relative">
                 <Server className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -276,21 +324,23 @@ export function LoginPage() {
                 The address of your own Dokploy panel. Your credentials are sent only to that
                 server.
               </p>
-            </div>
+            </motion.div>
 
             {verifying || steps.some((step) => step.status !== 'pending') ? (
               <VerificationSteps steps={steps} />
             ) : null}
 
-            <Button className="w-full" type="submit" disabled={verifying}>
-              {verifying ? <Loader2 className="size-4 animate-spin" /> : null}
-              {verifying ? 'Verifying' : 'Next'}
-              {verifying ? null : <ArrowRight className="size-4" />}
-            </Button>
-          </form>
+            <motion.div variants={item}>
+              <Button className="w-full" type="submit" disabled={verifying}>
+                {verifying ? <Loader2 className="size-4 animate-spin" /> : null}
+                {verifying ? 'Verifying' : 'Next'}
+                {verifying ? null : <ArrowRight className="size-4" />}
+              </Button>
+            </motion.div>
+          </motion.form>
         ) : flow.two_factor_pending ? (
-          <form onSubmit={onTotp} className="space-y-4" id="totp-form">
-            <div className="space-y-2">
+          <motion.form onSubmit={onTotp} className="space-y-4" id="totp-form" variants={stagger} initial="hidden" animate="show">
+            <motion.div variants={item} className="space-y-2">
               <Label htmlFor="totp">{useBackupCode ? 'Backup code' : 'Authentication code'}</Label>
               <Input
                 id="totp"
@@ -300,11 +350,14 @@ export function LoginPage() {
                 value={totpCode}
                 onChange={(event) => setTotpCode(event.target.value)}
               />
-            </div>
-            <Button className="w-full" type="submit" disabled={submitting}>
-              {submitting ? <Loader2 className="size-4 animate-spin" /> : null}
-              Verify
-            </Button>
+            </motion.div>
+            <motion.div variants={item}>
+              <Button className="w-full" type="submit" disabled={submitting}>
+                {submitting ? <Loader2 className="size-4 animate-spin" /> : null}
+                Verify
+              </Button>
+            </motion.div>
+            {submitting ? <Thinking label="Checking the code with your panel" /> : null}
             <button
               type="button"
               className="w-full text-center text-xs text-muted-foreground underline-offset-4 hover:underline"
@@ -316,7 +369,7 @@ export function LoginPage() {
             >
               {useBackupCode ? 'Use your authenticator app instead' : 'Use a backup code instead'}
             </button>
-          </form>
+          </motion.form>
         ) : (
           <Tabs defaultValue="credentials" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
@@ -331,8 +384,8 @@ export function LoginPage() {
             </TabsList>
 
             <TabsContent value="credentials" className="mt-4">
-              <form onSubmit={onCredentials} className="space-y-4" id="login-form">
-                <div className="space-y-2">
+              <motion.form onSubmit={onCredentials} className="space-y-4" id="login-form" variants={stagger} initial="hidden" animate="show">
+                <motion.div variants={item} className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <Input
                     id="email"
@@ -342,8 +395,8 @@ export function LoginPage() {
                     value={email}
                     onChange={(event) => setEmail(event.target.value)}
                   />
-                </div>
-                <div className="space-y-2">
+                </motion.div>
+                <motion.div variants={item} className="space-y-2">
                   <Label htmlFor="password">Password</Label>
                   <Input
                     id="password"
@@ -353,21 +406,24 @@ export function LoginPage() {
                     value={password}
                     onChange={(event) => setPassword(event.target.value)}
                   />
-                </div>
-                <Button className="w-full" type="submit" disabled={submitting}>
-                  {submitting ? <Loader2 className="size-4 animate-spin" /> : null}
-                  Login
-                </Button>
+                </motion.div>
+                <motion.div variants={item}>
+                  <Button className="w-full" type="submit" disabled={submitting}>
+                    {submitting ? <Loader2 className="size-4 animate-spin" /> : null}
+                    Login
+                  </Button>
+                </motion.div>
+                {submitting ? <Thinking label={`Signing in to ${flow.instance?.host ?? 'your panel'}`} /> : null}
                 <p className="text-xs text-muted-foreground">
                   A dedicated API key is created on your panel for this connection. Your password is
                   never stored.
                 </p>
-              </form>
+              </motion.form>
             </TabsContent>
 
             <TabsContent value="api-key" className="mt-4">
-              <form onSubmit={onApiKey} className="space-y-4" id="api-key-form">
-                <div className="space-y-2">
+              <motion.form onSubmit={onApiKey} className="space-y-4" id="api-key-form" variants={stagger} initial="hidden" animate="show">
+                <motion.div variants={item} className="space-y-2">
                   <Label htmlFor="api-key">API key</Label>
                   <div className="relative">
                     <Fingerprint className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -381,18 +437,23 @@ export function LoginPage() {
                       onChange={(event) => setApiKey(event.target.value)}
                     />
                   </div>
-                </div>
-                <Button className="w-full" type="submit" disabled={submitting}>
-                  {submitting ? <Loader2 className="size-4 animate-spin" /> : null}
-                  Continue with API key
-                </Button>
+                </motion.div>
+                <motion.div variants={item}>
+                  <Button className="w-full" type="submit" disabled={submitting}>
+                    {submitting ? <Loader2 className="size-4 animate-spin" /> : null}
+                    Continue with API key
+                  </Button>
+                </motion.div>
+                {submitting ? <Thinking label={`Verifying the key on ${flow.instance?.host ?? 'your panel'}`} /> : null}
                 <p className="text-xs text-muted-foreground">
                   Generate one in Dokploy under Settings, then API Keys.
                 </p>
-              </form>
+              </motion.form>
             </TabsContent>
           </Tabs>
         )}
+        </motion.div>
+        </AnimatePresence>
       </CardContent>
     </OnboardingLayout>
   )
