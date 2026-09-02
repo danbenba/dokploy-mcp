@@ -1,20 +1,20 @@
 import chalk from 'chalk'
 
 export const THEME = {
-  background: '#0A0A0A',
-  panel: '#141414',
-  element: '#1E1E1E',
-  border: '#484848',
-  text: '#EEEEEE',
-  muted: '#808080',
-  primary: '#FAB283',
-  primarySoft: '#FFC09F',
-  secondary: '#5C9CF5',
-  accent: '#9D7CD8',
-  success: '#7FD88F',
-  warning: '#F5A742',
-  error: '#E06C75',
-  info: '#56B6C2',
+  background: '#09090B',
+  panel: '#18181B',
+  element: '#27272A',
+  border: '#3F3F46',
+  text: '#F4F4F5',
+  muted: '#71717A',
+  primary: '#FAFAFA',
+  primarySoft: '#E4E4E7',
+  secondary: '#A1A1AA',
+  accent: '#D4D4D8',
+  success: '#34D399',
+  warning: '#FBBF24',
+  error: '#F87171',
+  info: '#38BDF8',
 }
 
 export const ui = {
@@ -38,7 +38,7 @@ export function width(): number {
 }
 
 export function softGradient(text: string): string {
-  const colors = [THEME.primary, THEME.primarySoft, THEME.text, THEME.primarySoft, THEME.primary]
+  const colors = [THEME.primary, THEME.primarySoft, THEME.secondary, THEME.primarySoft, THEME.primary]
   let cursor = 0
   return text
     .split('')

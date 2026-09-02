@@ -103,3 +103,13 @@ describe('option resolution', () => {
     expect(options.scopes).toEqual(['read'])
   })
 })
+
+describe('update check', () => {
+  it('compares versions numerically', async () => {
+    const { isNewerVersion } = await import('../src/ui/update.js')
+    expect(isNewerVersion('0.10.0', '0.9.9')).toBe(true)
+    expect(isNewerVersion('1.0.0', '1.0.0')).toBe(false)
+    expect(isNewerVersion('0.3.0', '0.3.1')).toBe(false)
+    expect(isNewerVersion('v1.2.0', '1.1.9')).toBe(true)
+  })
+})

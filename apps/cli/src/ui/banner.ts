@@ -24,6 +24,6 @@ export function showBanner(version: string): void {
     `  ${ui.muted(`v${version}`)}  ${ui.text.bold('Dokploy MCP')}  ${chip('install')} ${ui.muted('one command, every assistant')}`
   )
   console.log(
-    `  ${ui.muted('Claude Code')} ${ui.border('/')} ${ui.muted('Claude Desktop')} ${ui.border('/')} ${ui.muted('Cursor')} ${ui.border('/')} ${ui.muted('VS Code')} ${ui.border('/')} ${ui.muted('+ more')} ${ui.border('·')} ${ui.primary('browser sign-in')} ${ui.border('·')} ${ui.secondary('scoped api keys')}\n`
+    `  ${ui.muted('Claude Code')} ${ui.border('/')} ${ui.muted('Claude Desktop')} ${ui.border('/')} ${ui.muted('Cursor')} ${ui.border('/')} ${ui.muted('VS Code')} ${ui.border('/')} ${ui.muted('+ more')} ${ui.border('·')} ${ui.text('browser sign-in')} ${ui.border('·')} ${ui.text('scoped api keys')}\n`
   )
 }

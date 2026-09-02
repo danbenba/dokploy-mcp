@@ -6,6 +6,7 @@ import { ProgressBar } from '../ui/progress.js'
 import { multiselect } from '../ui/prompt.js'
 import { Spinner, loadingIntro } from '../ui/spinner.js'
 import { chip, ui } from '../ui/theme.js'
+import { showUpdateNotice } from '../ui/update.js'
 import { CLIENTS, type ClientDefinition, type ServerSettings } from './clients.js'
 import { openBrowser, startLogin, type CliCredentials } from './auth.js'
 
@@ -80,6 +81,7 @@ export async function runInstall(argv: string[], version: string): Promise<void>
   const name = flags.name ?? 'dokploy'
 
   await loadingIntro(`Dokploy MCP v${version}`)
+  await showUpdateNotice(version)
   showBanner(version)
 
   console.log(`  ${ui.muted('Server   :')} ${ui.primary(server)}`)

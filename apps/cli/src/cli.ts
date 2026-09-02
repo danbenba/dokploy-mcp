@@ -9,6 +9,7 @@ import {
 } from '@dokploy-mcp/core'
 import { ConfigurationError, HELP_TEXT, resolveOptions } from './config.js'
 import { runInstall } from './install/index.js'
+import { checkForUpdates } from './ui/update.js'
 
 const require = createRequire(import.meta.url)
 const VERSION: string = require('../package.json').version
@@ -50,6 +51,11 @@ export async function main(argv: string[] = process.argv.slice(2)): Promise<void
   }
   if (!account) {
     throw new ConfigurationError('No usable API key was provided.')
+  }
+
+  const latest = await checkForUpdates(VERSION)
+  if (latest) {
+    process.stderr.write(`dokploy-rest ${VERSION} is outdated, ${latest} is available: npx -y dokploy-rest@latest\n`)
   }
 
   const pool = new DokployOrgPool(options.dokployUrl, credentials)
