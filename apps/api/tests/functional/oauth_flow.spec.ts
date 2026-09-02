@@ -283,3 +283,18 @@ test.group('refresh token rotation', (group) => {
     assert.notEqual(rotated.body().refresh_token, first.body().refresh_token)
   })
 })
+
+test.group('flow link invalidation', (group) => {
+  group.each.setup(() => resetRateLimits())
+
+  test('a denied flow link cannot be reused', async ({ client }) => {
+    const clientId = await registerClient(client)
+    const response = await client.get(authorizeUrl(clientId)).redirects(0)
+    const flow = new URL(response.header('location') as string).searchParams.get('flow') as string
+    const denied = await client.post('/flow/deny').json({ flow })
+    denied.assertStatus(200)
+    const again = await client.post('/flow/session').json({ flow })
+    again.assertStatus(400)
+    again.assertBodyContains({ error: 'used' })
+  })
+})

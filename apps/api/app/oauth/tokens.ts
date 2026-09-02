@@ -109,6 +109,11 @@ export function consumeOnce(id: string, ttlSeconds: number): boolean {
   return true
 }
 
+export function hasConsumed(id: string): boolean {
+  pruneStore(consumedIds, Date.now())
+  return consumedIds.has(id)
+}
+
 export function revokeSession(sessionId: string, ttlSeconds: number): void {
   const now = Date.now()
   pruneStore(revokedSessions, now)

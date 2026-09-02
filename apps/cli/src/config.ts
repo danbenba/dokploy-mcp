@@ -81,6 +81,7 @@ Install options
   --server <url>       Authorization server to sign in through (default https://mcp.dokploy.rest)
   --url, --api-key     Skip the browser sign-in and use these credentials directly
   --name <name>        Server entry name written into each assistant (default dokploy)
+  --print-url          Also print the sign-in link, for machines without a browser
 
 Server options
   --url <url>          Address of your Dokploy panel (or DOKPLOY_URL)
