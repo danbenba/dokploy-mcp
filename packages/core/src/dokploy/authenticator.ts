@@ -220,13 +220,18 @@ function sanitizeImage(value: unknown): string | null {
 }
 
 function displayName(user: Record<string, unknown>): string {
-  const parts = [user.firstName, user.lastName].filter(
-    (part): part is string => typeof part === 'string' && part.length > 0
-  )
-  if (parts.length > 0) {
-    return parts.join(' ')
+  const full = typeof user.name === 'string' ? user.name.trim() : ''
+  const joined = [user.firstName, user.lastName]
+    .filter((part): part is string => typeof part === 'string' && part.trim().length > 0)
+    .map((part) => part.trim())
+    .join(' ')
+  if (full.length >= joined.length && full.length > 0) {
+    return full
   }
-  return String(user.name ?? user.email ?? 'Dokploy user')
+  if (joined.length > 0) {
+    return joined
+  }
+  return String(user.email ?? 'Dokploy user')
 }
 
 function presentableImage(value: unknown): string | null {
