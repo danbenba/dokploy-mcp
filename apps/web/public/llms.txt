@@ -21,7 +21,7 @@ claude mcp add dokploy \
   -- npx -y dokploy-rest
 ```
 
-Options: `--url`, `--api-key` (several keys separated by commas, one per organization), `--scopes read,deploy,create,delete,admin`. Also works with Claude Desktop, Cursor, Windsurf, Zed and any stdio MCP client.
+Options: `--url`, `--api-key` (several keys separated by commas, one per organization), `--scopes read,deploy,create,delete,admin`. Also works with Claude Desktop, Cursor, Windsurf, VS Code, Zed and any stdio MCP client. One-click links: Cursor `cursor://anysphere.cursor-deeplink/mcp/install?name=dokploy&config=<base64 {"url":"https://mcp.dokploy.rest/mcp"}>`, VS Code `vscode:mcp/install?<urlencoded {"name":"dokploy","type":"http","url":"https://mcp.dokploy.rest/mcp"}>`.
 
 ## Self-hosted
 
