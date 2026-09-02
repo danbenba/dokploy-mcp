@@ -1,0 +1,25 @@
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    required: [dokployUrl, dokployApiKey]
+    properties:
+      dokployUrl:
+        type: string
+        description: Address of your Dokploy panel, for example https://panel.example.com
+      dokployApiKey:
+        type: string
+        description: API key generated in Dokploy under Settings then API Keys
+      dokployScopes:
+        type: string
+        description: Optional comma separated list among read, deploy, create, delete, admin
+  commandFunction: |-
+    (config) => ({
+      command: 'npx',
+      args: ['-y', 'dokploy-rest'],
+      env: {
+        DOKPLOY_URL: config.dokployUrl,
+        DOKPLOY_API_KEY: config.dokployApiKey,
+        DOKPLOY_SCOPES: config.dokployScopes || ''
+      }
+    })

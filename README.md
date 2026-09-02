@@ -72,6 +72,9 @@ claude mcp add dokploy \
 Pass several keys separated by commas to reach several organizations. See
 [apps/cli/README.md](apps/cli/README.md) for Claude Desktop, scope narrowing and all flags.
 
+The server is also listed in the [MCP registry](https://registry.modelcontextprotocol.io) as
+`io.github.danbenba/dokploy-mcp` (see `server.json`) and ships a `smithery.yaml` for Smithery.
+
 ## How the authorization flow works
 
 ```
