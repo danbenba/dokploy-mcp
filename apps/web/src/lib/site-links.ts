@@ -1,0 +1,12 @@
+export const MCP_URL = (import.meta.env.VITE_MCP_URL ?? 'https://mcp.dokploy.rest').replace(/\/+$/, '')
+export const WEB_URL = 'https://dokploy.rest'
+export const DOCS_URL = 'https://docs.dokploy.rest'
+export const LEGAL_URL = 'https://legal.dokploy.rest'
+export const PRIVACY_URL = `${LEGAL_URL}/privacy`
+export const LICENSE_URL = `${LEGAL_URL}/license`
+export const NOTICE_URL = `${LEGAL_URL}/notice`
+export const GITHUB_URL = 'https://github.com/danbenba/dokploy-mcp'
+export const NPM_URL = 'https://www.npmjs.com/package/dokploy-rest'
+export const DOKPLOY_URL = 'https://dokploy.com'
+export const REGISTRY_URL = 'https://registry.modelcontextprotocol.io'
+export const CONTACT_EMAIL = 'contact@danbenba.dev'

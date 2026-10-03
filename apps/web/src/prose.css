@@ -1,0 +1,114 @@
+/* Long-form prose for the documentation and legal sites, written in the landing page's own
+   vocabulary: semibold tracking-tight headings, muted body copy, bordered muted code surfaces.
+   It lives here, next to the tokens it builds on, so both satellite sites share one copy. */
+@layer components {
+  .site-prose {
+    @apply text-base text-muted-foreground;
+  }
+
+  .site-prose > :first-child {
+    @apply mt-0;
+  }
+
+  .site-prose h2 {
+    @apply mt-14 scroll-mt-24 border-t pt-10 text-2xl font-semibold tracking-tight text-balance text-foreground sm:text-3xl;
+  }
+
+  .site-prose h3 {
+    @apply mt-10 scroll-mt-24 text-lg font-medium text-balance text-foreground;
+  }
+
+  .site-prose h4 {
+    @apply mt-8 scroll-mt-24 text-base font-medium text-foreground;
+  }
+
+  .site-prose p {
+    @apply mt-4 text-pretty;
+  }
+
+  .site-prose ul {
+    @apply mt-4 list-disc space-y-2 pl-5;
+  }
+
+  .site-prose ol {
+    @apply mt-4 list-decimal space-y-2 pl-5;
+  }
+
+  .site-prose li {
+    @apply text-pretty;
+  }
+
+  .site-prose li::marker {
+    @apply text-muted-foreground/70;
+  }
+
+  .site-prose li > ul,
+  .site-prose li > ol {
+    @apply mt-2;
+  }
+
+  .site-prose strong {
+    @apply font-medium text-foreground;
+  }
+
+  .site-prose a {
+    @apply text-foreground underline decoration-border underline-offset-4 transition-colors hover:decoration-foreground;
+  }
+
+  .site-prose code {
+    @apply rounded-sm bg-muted px-1.5 py-0.5 font-mono text-[0.8125rem] text-foreground;
+  }
+
+  .site-prose pre {
+    @apply mt-5 overflow-x-auto rounded-xl border bg-muted/40 p-4;
+  }
+
+  .site-prose pre code {
+    @apply block bg-transparent p-0 text-xs leading-relaxed text-foreground;
+  }
+
+  .site-prose blockquote {
+    @apply mt-5 border-l-2 pl-4 text-pretty italic;
+  }
+
+  .site-prose hr {
+    @apply mt-12 border-t;
+  }
+
+  .site-prose table {
+    @apply mt-5 w-full border-collapse text-left text-sm;
+  }
+
+  .site-prose thead th {
+    @apply border-b pb-2.5 pr-4 align-bottom font-medium text-foreground;
+  }
+
+  .site-prose tbody td {
+    @apply border-b py-2.5 pr-4 align-top;
+  }
+
+  .site-prose tbody tr:last-child td {
+    @apply border-b-0;
+  }
+
+  .site-prose td code,
+  .site-prose th code {
+    @apply whitespace-nowrap;
+  }
+
+  .site-prose .table-scroll {
+    @apply mt-5 overflow-x-auto;
+  }
+
+  .site-prose .table-scroll table {
+    @apply mt-0;
+  }
+}
+
+/* Legal texts that must be reproduced exactly: the Apache license and the NOTICE file. */
+@layer components {
+  .site-verbatim {
+    @apply overflow-x-auto rounded-xl border bg-muted/40 p-5 font-mono text-[0.75rem] leading-relaxed whitespace-pre text-muted-foreground;
+    tab-size: 4;
+  }
+}

@@ -10,12 +10,19 @@ import { CopyButton } from '@/components/landing/copy-button'
 import { AddToButton } from '@/components/landing/add-to-button'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import {
+  DOCS_URL,
+  DOKPLOY_URL,
+  GITHUB_URL,
+  LEGAL_URL,
+  LICENSE_URL,
+  MCP_URL,
+  NPM_URL,
+  PRIVACY_URL,
+  REGISTRY_URL,
+} from '@/lib/site-links'
 
-const MCP_URL = (import.meta.env.VITE_MCP_URL ?? 'https://mcp.dokploy.rest').replace(/\/+$/, '')
-const GITHUB_URL = 'https://github.com/danbenba/dokploy-mcp'
-const NPM_URL = 'https://www.npmjs.com/package/dokploy-rest'
-const DOKPLOY_URL = 'https://dokploy.com'
-const REGISTRY_URL = 'https://registry.modelcontextprotocol.io'
+
 const NPX_COMMAND = 'npx -y dokploy-rest'
 const CLAUDE_CODE_COMMAND =
   'claude mcp add dokploy -e DOKPLOY_URL=https://panel.example.com -e DOKPLOY_API_KEY=your-key -- npx -y dokploy-rest'
@@ -237,6 +244,9 @@ export function LandingPage() {
               <a href="#connect">Connect</a>
             </Button>
             <Button variant="ghost" size="sm" asChild>
+              <a href={DOCS_URL}>Docs</a>
+            </Button>
+            <Button variant="ghost" size="sm" asChild>
               <a href="#faq">FAQ</a>
             </Button>
             <Button variant="ghost" size="sm" asChild>
@@ -447,7 +457,7 @@ export function LandingPage() {
           <nav aria-label="Resources" className="text-sm">
             <p className="font-medium">Resources</p>
             <ul className="mt-3 space-y-2 text-muted-foreground">
-              <li><a href={GITHUB_URL} target="_blank" rel="noreferrer" className="hover:text-foreground">Documentation</a></li>
+              <li><a href={DOCS_URL} className="hover:text-foreground">Documentation</a></li>
               <li><a href={REGISTRY_URL} target="_blank" rel="noreferrer" className="hover:text-foreground">MCP registry</a></li>
               <li><a href="/llms.txt" className="hover:text-foreground">llms.txt</a></li>
             </ul>
@@ -457,12 +467,19 @@ export function LandingPage() {
             <ul className="mt-3 space-y-2 text-muted-foreground">
               <li><a href={GITHUB_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 hover:text-foreground">GitHub <ArrowUpRight className="size-3.5" /></a></li>
               <li><a href={`${GITHUB_URL}/issues`} target="_blank" rel="noreferrer" className="hover:text-foreground">Issues</a></li>
+              <li><a href={PRIVACY_URL} className="hover:text-foreground">Privacy</a></li>
+              <li><a href={LICENSE_URL} className="hover:text-foreground">License</a></li>
               <li><a href={DOKPLOY_URL} target="_blank" rel="noreferrer" className="hover:text-foreground">Dokploy</a></li>
             </ul>
           </nav>
         </Container>
         <Container className="flex flex-col gap-2 border-t py-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <span>Apache 2.0. Not affiliated with Dokploy Technology, Inc.</span>
+          <span>
+            Apache 2.0. Not affiliated with Dokploy Technology, Inc.{' '}
+            <a href={LEGAL_URL} className="hover:text-foreground">
+              Legal
+            </a>
+          </span>
           <span>{MCP_URL}</span>
         </Container>
       </footer>
