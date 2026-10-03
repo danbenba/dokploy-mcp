@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://legal.dokploy.rest/</loc><changefreq>yearly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://legal.dokploy.rest/privacy</loc><changefreq>yearly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://legal.dokploy.rest/license</loc><changefreq>yearly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://legal.dokploy.rest/notice</loc><changefreq>yearly</changefreq><priority>0.5</priority></url>
+</urlset>

@@ -1,0 +1,7 @@
+/* The landing page's own stylesheet and prose layer: identical tokens, identical Inter Variable,
+   identical base layer. Nothing is redefined here, so this site cannot drift from dokploy.rest. */
+@import '../../web/src/index.css';
+@import '../../web/src/prose.css';
+
+@source '../../web/src';
+@source './';

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://docs.dokploy.rest/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://docs.dokploy.rest/introduction</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://docs.dokploy.rest/quickstart</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://docs.dokploy.rest/hosted-connector</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://docs.dokploy.rest/npm-package</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://docs.dokploy.rest/self-hosting</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://docs.dokploy.rest/tools</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://docs.dokploy.rest/permissions</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://docs.dokploy.rest/playbooks</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://docs.dokploy.rest/cli</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://docs.dokploy.rest/authorization</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://docs.dokploy.rest/security</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://docs.dokploy.rest/troubleshooting</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+</urlset>

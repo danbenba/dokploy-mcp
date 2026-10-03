@@ -6,6 +6,8 @@ ChatGPT operate the [Dokploy](https://dokploy.com) panel you host yourself.
 Ask for a deployment, a database, a domain or the reason a build failed, in your own words. The
 assistant works through Dokploy's own HTTP API, with the permissions you granted and nothing more.
 
+Full documentation: **[docs.dokploy.rest](https://docs.dokploy.rest)**.
+
 > Work in progress. The interfaces described here already run, but they may still change.
 
 ## What the assistant can do
@@ -111,10 +113,15 @@ the panel URL and its API key never sit in a store the server operator can read 
 
 ```
 apps/api      AdonisJS server: MCP endpoint, OAuth authorization server, login flow API
-apps/web      Vite + React: landing page, login and consent screens
+apps/web      Vite + React: landing page, login and consent screens, shared design system
+apps/docs     docs.dokploy.rest, Markdown rendered with apps/web's components
+apps/legal    legal.dokploy.rest, generated from PRIVACY.md, LICENSE and NOTICE
 apps/cli      npm package published as dokploy-rest, stdio transport
 packages/core Shared core: Dokploy client, panel verification, endpoint catalog, tool surface
 ```
+
+`apps/docs` and `apps/legal` import `apps/web/src` directly, through an `@` alias pointing at it,
+so the three sites share one copy of the tokens, fonts and components rather than three that drift.
 
 ## Development
 
@@ -125,6 +132,8 @@ npm run build -w packages/core
 cp apps/api/.env.example apps/api/.env   # then fill APP_KEY and TOKEN_SECRET
 npm run dev -w apps/api                  # http://localhost:3333
 npm run dev -w apps/web                  # http://localhost:5173
+npm run dev -w apps/docs                 # http://localhost:5174
+npm run dev -w apps/legal                # http://localhost:5175
 ```
 
 Tests:
@@ -138,6 +147,11 @@ The Dokploy endpoint catalog embedded in `packages/core/src/mcp/catalog.json` is
 Dokploy's own `openapi.json`. Regenerate it after a Dokploy upgrade with the script in
 [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## License
+## Privacy and license
+
+The hosted service keeps no database: every token is an encrypted JWE held by your client, and
+passwords are relayed once to your own panel and never stored. The full policy is in
+[PRIVACY.md](PRIVACY.md), published at
+[legal.dokploy.rest/privacy](https://legal.dokploy.rest/privacy).
 
 Apache 2.0. Not affiliated with Dokploy Technology, Inc. See [NOTICE](NOTICE).

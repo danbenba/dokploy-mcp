@@ -3,6 +3,8 @@
 > Open-source Model Context Protocol (MCP) server that lets Claude, ChatGPT or any MCP client operate a self-hosted Dokploy panel: projects, environments, applications, compose stacks, databases, domains, deployments and logs.
 
 Website: https://dokploy.rest
+Documentation: https://docs.dokploy.rest
+Legal (privacy policy, license, notice): https://legal.dokploy.rest
 Source: https://github.com/danbenba/dokploy-mcp (Apache 2.0)
 npm: https://www.npmjs.com/package/dokploy-rest
 
@@ -30,5 +32,9 @@ Options: `--url`, `--api-key` (several keys separated by commas, one per organiz
 ## Tools
 
 Curated tools for projects, applications, compose, databases, domains, deployments, containers, storage, routing, schedules and backups, plus `api_find` (search all Dokploy endpoints with exact schemas) and `dokploy_api` (call any endpoint). Five playbooks: deploy, troubleshoot, database, template, domains. Tools are gated by the scopes granted at connection time.
+
+## Privacy
+
+No database. Every token is an encrypted JWE held by the client, carrying the panel URL and one scoped API key per granted organization. Passwords are relayed once to the user's own panel and never stored. No analytics, no tracking cookies, no third-party trackers. Access tokens last 1 hour, refresh tokens 30 days and rotate on use. Full policy: https://legal.dokploy.rest/privacy
 
 Not affiliated with Dokploy Technology, Inc. Claude is a trademark of Anthropic, ChatGPT of OpenAI.

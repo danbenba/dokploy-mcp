@@ -39,6 +39,30 @@ services:
     networks:
       - dokploy-network
 
+  docs:
+    build:
+      context: .
+      dockerfile: apps/docs/Dockerfile
+      args:
+        VITE_MCP_URL: ${PUBLIC_URL:-https://mcp.dokploy.rest}
+    restart: unless-stopped
+    expose:
+      - '80'
+    networks:
+      - dokploy-network
+
+  legal:
+    build:
+      context: .
+      dockerfile: apps/legal/Dockerfile
+      args:
+        VITE_MCP_URL: ${PUBLIC_URL:-https://mcp.dokploy.rest}
+    restart: unless-stopped
+    expose:
+      - '80'
+    networks:
+      - dokploy-network
+
 networks:
   dokploy-network:
     external: true
