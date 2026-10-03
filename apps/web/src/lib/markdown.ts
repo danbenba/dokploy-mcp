@@ -3,6 +3,8 @@ import { marked } from 'marked'
 export interface Heading {
   id: string
   text: string
+  /** 2 for a section, 3 for a subsection. */
+  depth: 2 | 3
 }
 
 export function slugify(value: string): string {
@@ -32,13 +34,12 @@ export function render(markdown: string): string {
   return html.replace(/<table>/g, '<div class="table-scroll"><table>').replace(/<\/table>/g, '</table></div>')
 }
 
-/** The h2 headings, for the "On this page" rail. */
+/** The section and subsection headings, for the "On this page" rail. */
 export function outline(markdown: string): Heading[] {
   const headings: Heading[] = []
-  const lines = markdown.split('\n')
   let fenced = false
 
-  for (const line of lines) {
+  for (const line of markdown.split('\n')) {
     if (line.startsWith('```')) {
       fenced = !fenced
       continue
@@ -46,10 +47,11 @@ export function outline(markdown: string): Heading[] {
     if (fenced) {
       continue
     }
-    const match = /^##\s+(.+?)\s*$/.exec(line)
+    // A '#' inside a fenced block is a shell comment, not a heading, hence the guard above.
+    const match = /^(#{2,3})\s+(.+?)\s*$/.exec(line)
     if (match) {
-      const text = match[1].replace(/`/g, '')
-      headings.push({ id: slugify(text), text })
+      const text = match[2].replace(/`/g, '')
+      headings.push({ id: slugify(text), text, depth: match[1].length as 2 | 3 })
     }
   }
 

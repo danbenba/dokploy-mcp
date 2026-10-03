@@ -112,3 +112,27 @@
     tab-size: 4;
   }
 }
+
+/* Sticky sidebar and outline rails: they scroll on their own, so their scrollbar should be thin
+   and quiet rather than a full-width bar across the column. */
+@layer components {
+  .site-rail {
+    @apply sticky top-14 max-h-[calc(100dvh-3.5rem)] overflow-x-hidden overflow-y-auto py-10;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  .site-rail::-webkit-scrollbar {
+    width: 6px;
+    height: 0;
+  }
+
+  .site-rail::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: var(--border);
+  }
+
+  .site-rail::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}

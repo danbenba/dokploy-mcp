@@ -25,7 +25,9 @@ function useDocumentMeta(page: DocPageData) {
 
 export function DocPage({ page }: { page: DocPageData }) {
   const navigate = useNavigate()
-  const sections = outline(page.markdown)
+  // Sections only: this card stands in for the outline rail on screens too narrow to show it,
+  // where a full heading list would push the page itself below the fold.
+  const sections = outline(page.markdown).filter((heading) => heading.depth === 2)
   const { previous, next } = neighbours(page.slug)
 
   useDocumentMeta(page)
@@ -40,9 +42,9 @@ export function DocPage({ page }: { page: DocPageData }) {
       </div>
 
       {sections.length >= 4 ? (
-        <div className="mt-10">
+        <div className="mt-10 xl:hidden">
           <nav aria-label="On this page" className="rounded-xl border bg-card p-5">
-            <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+            <p className="text-[0.6875rem] font-medium tracking-wider text-muted-foreground/80 uppercase">
               On this page
             </p>
             <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5 text-sm">

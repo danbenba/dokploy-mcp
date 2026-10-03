@@ -1,6 +1,6 @@
 import { ArrowUpRight } from 'lucide-react'
 import { Logo } from '@/components/logo'
-import { Container } from '@/components/site/container'
+import { Container, type ContainerWidth } from '@/components/site/container'
 import type { NavItem } from '@/components/site/satellite-header'
 import {
   DOKPLOY_URL,
@@ -21,10 +21,16 @@ export interface FooterColumn {
  * The landing page's footer, for the docs and legal sites: same four-column grid, same bottom bar.
  * Callers supply the first two link columns; the project column is the same everywhere.
  */
-export function SatelliteFooter({ columns }: { columns: FooterColumn[] }) {
+export function SatelliteFooter({
+  columns,
+  width,
+}: {
+  columns: FooterColumn[]
+  width?: ContainerWidth
+}) {
   return (
     <footer className="border-t">
-      <Container className="grid gap-10 py-14 sm:grid-cols-[2fr_1fr_1fr_1fr]">
+      <Container width={width} className="grid gap-10 py-14 sm:grid-cols-[2fr_1fr_1fr_1fr]">
         <div>
           <a href={WEB_URL} className="flex items-center gap-2.5">
             <Logo className="size-7" />
@@ -86,7 +92,7 @@ export function SatelliteFooter({ columns }: { columns: FooterColumn[] }) {
         </nav>
       </Container>
 
-      <Container className="flex flex-col gap-2 border-t py-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+      <Container width={width} className="flex flex-col gap-2 border-t py-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
         <span>
           Apache 2.0. Not affiliated with Dokploy Technology, Inc.{' '}
           <a href={LEGAL_URL} className="hover:text-foreground">

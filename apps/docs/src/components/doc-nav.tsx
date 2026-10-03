@@ -2,16 +2,24 @@ import { NavLink } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import { groups } from '~/lib/nav'
 
+/**
+ * The page list.
+ *
+ * Nothing here uses a negative margin: the links are padded and the group labels share that
+ * padding, so the active pill lines up with the headings above it without ever being wider than
+ * the column. A link wider than its scroll container is what puts a horizontal scrollbar across
+ * the bottom of the sidebar.
+ */
 export function DocNav({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <nav aria-label="Documentation" className="text-sm">
-      <ul className="space-y-7">
+      <ul className="space-y-6">
         {groups.map((group) => (
           <li key={group.label}>
-            <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+            <p className="px-3 text-[0.6875rem] font-medium tracking-wider text-muted-foreground/80 uppercase">
               {group.label}
             </p>
-            <ul className="mt-3 space-y-0.5">
+            <ul className="mt-1.5">
               {group.pages.map((page) => (
                 <li key={page.slug}>
                   <NavLink
@@ -19,10 +27,10 @@ export function DocNav({ onNavigate }: { onNavigate?: () => void }) {
                     onClick={onNavigate}
                     className={({ isActive }) =>
                       cn(
-                        'block rounded-md px-2.5 py-1.5 -mx-2.5 transition-colors',
+                        'block truncate rounded-md px-3 py-1.5 transition-colors',
                         isActive
                           ? 'bg-muted font-medium text-foreground'
-                          : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+                          : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
                       )
                     }
                   >
