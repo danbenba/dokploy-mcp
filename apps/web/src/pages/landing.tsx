@@ -5,7 +5,6 @@ import openaiMark from '@/assets/brands/openai.svg'
 import { Logo } from '@/components/logo'
 import { Reveal, Stagger, StaggerItem } from '@/components/landing/reveal'
 import { MacbookPro } from '@/components/landing/macbook-pro'
-import { ClaudeCodeDemo } from '@/components/landing/claude-code-demo'
 import { CopyButton } from '@/components/landing/copy-button'
 import { AddToButton } from '@/components/landing/add-to-button'
 import { Button } from '@/components/ui/button'
@@ -27,6 +26,22 @@ const NPX_COMMAND = 'npx -y dokploy-rest'
 const CLAUDE_CODE_COMMAND =
   'claude mcp add dokploy -e DOKPLOY_URL=https://panel.example.com -e DOKPLOY_API_KEY=your-key -- npx -y dokploy-rest'
 const DOCKER_COMMAND = 'docker compose up -d'
+
+function DemoVideo({ className }: { className?: string }) {
+  return (
+    <video
+      src="/videos/dokploy-mcp-teaser.mp4"
+      poster="/videos/dokploy-mcp-teaser-poster.jpg"
+      autoPlay
+      muted
+      loop
+      playsInline
+      preload="metadata"
+      aria-label="Dokploy MCP teaser: Claude Code deploys an app and fixes a 502 on a real Dokploy panel"
+      className={cn('h-full w-full bg-[#0a0a0a] object-contain', className)}
+    />
+  )
+}
 
 function GithubIcon({ className }: { className?: string }) {
   return (
@@ -272,17 +287,15 @@ export function LandingPage() {
             <SectionTitle id="demo"
               eyebrow="Watch it work"
               title="One sentence in Claude Code. A deployment on your panel."
-              body="A real session: Claude lists your projects, triggers the deploy, follows the build and reports back, all through Dokploy MCP."
+              body="Real Claude Code sessions: one sentence deploys an app, another finds and fixes a 502, all through Dokploy MCP."
             />
             <Reveal delay={0.1} y={24} className="mx-auto mt-12 hidden w-full max-w-[900px] min-[480px]:block">
               <MacbookPro>
-                <ClaudeCodeDemo />
+                <DemoVideo />
               </MacbookPro>
             </Reveal>
             <Reveal delay={0.1} className="mt-10 overflow-hidden rounded-xl border border-neutral-800 min-[480px]:hidden">
-              <div className="h-[420px]">
-                <ClaudeCodeDemo fontScale={1 / 34} />
-              </div>
+              <DemoVideo className="aspect-video h-auto" />
             </Reveal>
           </Container>
         </section>
