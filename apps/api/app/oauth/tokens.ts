@@ -43,6 +43,7 @@ export interface FlowPayload extends AuthorizationRequest {
   pendingCookies?: string
   pendingUrl?: string
   pendingHost?: string
+  pendingInsecure?: boolean
 }
 
 export interface CodePayload {

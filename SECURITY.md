@@ -24,8 +24,10 @@ In scope:
 Out of scope:
 
 - vulnerabilities in Dokploy itself, which belong to https://github.com/dokploy/dokploy
-- findings that require an operator to deliberately set `ALLOW_PRIVATE_NETWORKS=true` or
-  `ALLOW_INSECURE_DOKPLOY=true`, which exist for local development and are documented as unsafe
+- findings that require an operator to deliberately set `ALLOW_PRIVATE_NETWORKS=true`, which
+  exists for local development and is documented as unsafe
+- interception of traffic to a panel the user chose to reach over plain `http://`, which the
+  sign-in screens warn about before any credential is typed
 - rate limiting on a self-hosted instance the reporter controls
 
 ## Design notes for reviewers
@@ -47,5 +49,7 @@ Out of scope:
 
 - Set a long random `TOKEN_SECRET` and keep it out of version control.
 - Terminate TLS in front of the server and leave `TRUST_PROXY` on so client addresses are correct.
-- Keep `ALLOW_PRIVATE_NETWORKS` and `ALLOW_INSECURE_DOKPLOY` false in production.
+- Keep `ALLOW_PRIVATE_NETWORKS` false in production.
+- `ALLOW_INSECURE_DOKPLOY` defaults to true so panels without a certificate still work; set it to
+  false to accept https panels only.
 - Consider `DOKPLOY_LOCKED_URL` when the deployment serves a single known panel.

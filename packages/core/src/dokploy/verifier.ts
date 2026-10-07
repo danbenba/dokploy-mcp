@@ -1,12 +1,13 @@
 import { isIP } from 'node:net'
 import { lookup } from 'node:dns/promises'
-import { normalizeBaseUrl } from '../url.js'
+import { hasExplicitScheme, normalizeBaseUrl } from '../url.js'
 import { InstanceVerificationError } from './errors.js'
 
 export interface VerifiedInstance {
   url: string
   host: string
   isCloud: boolean
+  insecure: boolean
 }
 
 export interface VerifyOptions {
@@ -88,6 +89,48 @@ function probe(url: string, timeoutMs: number): Promise<Response> {
   })
 }
 
+async function inspect(url: string, hostname: string, timeoutMs: number): Promise<boolean> {
+  let health: Response
+  try {
+    health = await probe(`${url}/api/health`, timeoutMs)
+  } catch (error) {
+    const timedOut = error instanceof Error && error.name === 'TimeoutError'
+    throw new InstanceVerificationError(
+      'unreachable',
+      `Could not reach ${hostname}: ${timedOut ? 'the connection timed out' : 'the connection failed'}.`
+    )
+  }
+  if (!health.ok) {
+    throw new InstanceVerificationError(
+      'not_dokploy',
+      `${hostname} answered, but it does not expose the Dokploy health endpoint (HTTP ${health.status}).`
+    )
+  }
+
+  try {
+    const response = await probe(`${url}/api/settings.isCloud`, timeoutMs)
+    if (response.status === 401 || response.status === 403) {
+      return false
+    }
+    if (response.ok) {
+      const body = (await response.json()) as unknown
+      if (typeof body !== 'boolean') {
+        throw new Error('unexpected body')
+      }
+      return body
+    }
+    throw new Error(`status ${response.status}`)
+  } catch (error) {
+    if (error instanceof InstanceVerificationError) {
+      throw error
+    }
+    throw new InstanceVerificationError(
+      'not_dokploy',
+      `${hostname} does not answer like a Dokploy panel. Make sure the URL points at the panel itself.`
+    )
+  }
+}
+
 export async function verifyDokployInstance(
   input: string,
   options: VerifyOptions = {}
@@ -99,51 +142,40 @@ export async function verifyDokployInstance(
     throw new InstanceVerificationError('invalid_url', 'This does not look like a valid URL.')
   }
 
+  const allowInsecure = options.allowInsecure ?? true
   const parsed = new URL(url)
-  if (parsed.protocol !== 'https:' && !options.allowInsecure) {
+  if (parsed.protocol !== 'https:' && !allowInsecure) {
     throw new InstanceVerificationError('insecure', 'Only https:// Dokploy panels are accepted.')
   }
   await assertReachableHost(parsed.hostname, options.allowPrivateNetworks ?? false)
 
   const timeoutMs = options.timeoutMs ?? 10_000
-
-  let health: Response
-  try {
-    health = await probe(`${url}/api/health`, timeoutMs)
-  } catch (error) {
-    const timedOut = error instanceof Error && error.name === 'TimeoutError'
-    throw new InstanceVerificationError(
-      'unreachable',
-      `Could not reach ${parsed.hostname}: ${timedOut ? 'the connection timed out' : 'the connection failed'}.`
-    )
-  }
-  if (!health.ok) {
-    throw new InstanceVerificationError(
-      'not_dokploy',
-      `${parsed.hostname} answered, but it does not expose the Dokploy health endpoint (HTTP ${health.status}).`
-    )
+  const candidates = [url]
+  if (allowInsecure && parsed.protocol === 'https:' && !hasExplicitScheme(input)) {
+    candidates.push(url.replace(/^https:/, 'http:'))
   }
 
   let isCloud = false
-  try {
-    const response = await probe(`${url}/api/settings.isCloud`, timeoutMs)
-    if (response.status === 401 || response.status === 403) {
-      isCloud = false
-    } else if (response.ok) {
-      const body = (await response.json()) as unknown
-      if (typeof body !== 'boolean') {
-        throw new Error('unexpected body')
+  let resolved = url
+  for (const [index, candidate] of candidates.entries()) {
+    try {
+      isCloud = await inspect(candidate, parsed.hostname, timeoutMs)
+      resolved = candidate
+      break
+    } catch (error) {
+      const last = index === candidates.length - 1
+      const retryable =
+        error instanceof InstanceVerificationError && error.code === 'unreachable'
+      if (last || !retryable) {
+        throw error
       }
-      isCloud = body
-    } else {
-      throw new Error(`status ${response.status}`)
     }
-  } catch {
-    throw new InstanceVerificationError(
-      'not_dokploy',
-      `${parsed.hostname} does not answer like a Dokploy panel. Make sure the URL points at the panel itself.`
-    )
   }
 
-  return { url, host: parsed.hostname, isCloud }
+  return {
+    url: resolved,
+    host: parsed.hostname,
+    isCloud,
+    insecure: new URL(resolved).protocol === 'http:',
+  }
 }

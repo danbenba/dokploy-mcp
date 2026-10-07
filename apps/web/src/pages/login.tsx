@@ -85,6 +85,9 @@ export function LoginPage() {
   const [steps, setSteps] = useState<VerificationStep[]>(initialSteps())
   const [verifying, setVerifying] = useState(false)
 
+  const entersOverHttp = instanceUrl.trim().toLowerCase().startsWith('http://')
+  const connectsOverHttp = flow?.instance?.insecure ?? false
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [apiKey, setApiKey] = useState('')
@@ -326,6 +329,16 @@ export function LoginPage() {
               </p>
             </motion.div>
 
+            {entersOverHttp ? (
+              <motion.div variants={item}>
+                <AlertBlock type="warning">
+                  This address is plain <strong>http://</strong>, so your password and the API keys
+                  created for it travel unencrypted between this connector and your panel. Anyone on
+                  the network path can read them. Put the panel behind HTTPS when you can.
+                </AlertBlock>
+              </motion.div>
+            ) : null}
+
             {verifying || steps.some((step) => step.status !== 'pending') ? (
               <VerificationSteps steps={steps} />
             ) : null}
@@ -372,6 +385,13 @@ export function LoginPage() {
           </motion.form>
         ) : (
           <Tabs defaultValue="credentials" className="w-full">
+            {connectsOverHttp ? (
+              <AlertBlock type="warning" className="mb-4">
+                <strong>{flow.instance?.host}</strong> is reached over plain http://, so what you
+                type here travels unencrypted to it. Prefer an API key over your password on this
+                connection.
+              </AlertBlock>
+            ) : null}
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="credentials">
                 <Lock className="size-4" />

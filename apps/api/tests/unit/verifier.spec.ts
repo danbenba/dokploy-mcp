@@ -52,11 +52,43 @@ test.group('base url normalization', () => {
 })
 
 test.group('instance verification', () => {
-  test('refuses plain http panels by default', async ({ assert }) => {
-    await assert.rejects(
-      () => verifyDokployInstance('http://panel.example.com'),
-      InstanceVerificationError
-    )
+  test('accepts plain http panels by default', async ({ assert }) => {
+    let captured: unknown
+    try {
+      await verifyDokployInstance('http://127.0.0.1:9', {
+        allowPrivateNetworks: true,
+        timeoutMs: 500,
+      })
+    } catch (error) {
+      captured = error
+    }
+    assert.instanceOf(captured, InstanceVerificationError)
+    assert.equal((captured as InstanceVerificationError).code, 'unreachable')
+  })
+
+  test('refuses plain http panels when the deployment opts out', async ({ assert }) => {
+    let captured: unknown
+    try {
+      await verifyDokployInstance('http://panel.example.com', { allowInsecure: false })
+    } catch (error) {
+      captured = error
+    }
+    assert.instanceOf(captured, InstanceVerificationError)
+    assert.equal((captured as InstanceVerificationError).code, 'insecure')
+  })
+
+  test('does not downgrade an address typed as https', async ({ assert }) => {
+    let captured: unknown
+    try {
+      await verifyDokployInstance('https://127.0.0.1:9', {
+        allowPrivateNetworks: true,
+        timeoutMs: 500,
+      })
+    } catch (error) {
+      captured = error
+    }
+    assert.instanceOf(captured, InstanceVerificationError)
+    assert.equal((captured as InstanceVerificationError).code, 'unreachable')
   })
 
   test('refuses panels resolving to private addresses', async ({ assert }) => {

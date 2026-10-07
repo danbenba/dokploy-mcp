@@ -17,7 +17,7 @@ const dokployMcpConfig = {
   flowSessionTtl: env.get('FLOW_SESSION_TTL', 900),
   lockedDokployUrl: lockedUrl ? normalizeBaseUrl(lockedUrl) : null,
   allowPrivateNetworks: env.get('ALLOW_PRIVATE_NETWORKS', false),
-  allowInsecureDokploy: env.get('ALLOW_INSECURE_DOKPLOY', false),
+  allowInsecureDokploy: env.get('ALLOW_INSECURE_DOKPLOY', true),
   brandName: env.get('BRAND_NAME', 'Dokploy MCP'),
   apiKeyLabel: env.get('API_KEY_LABEL', 'Dokploy MCP'),
   resourceUrl: `${publicUrl}/mcp`,

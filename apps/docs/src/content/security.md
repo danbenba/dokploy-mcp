@@ -11,9 +11,16 @@ Before a password is requested, let alone relayed, the address you typed is chec
 3. **Two probes.** The host is asked to prove it is a Dokploy panel. One that does not answer like
    one is refused.
 
-Only then is a sign-in form shown. A self-hosted deployment can disable the first two guards with
-`ALLOW_PRIVATE_NETWORKS` and `ALLOW_INSECURE_DOKPLOY`, which exist for local development and should
-stay `false` anywhere a stranger can reach the form.
+Only then is a sign-in form shown. A self-hosted deployment can disable the private-address guard
+with `ALLOW_PRIVATE_NETWORKS`, which exists for local development and should stay `false` anywhere
+a stranger can reach the form.
+
+A `http://` address is accepted, because plenty of self-hosted panels have no certificate. What it
+costs is stated where it matters rather than hidden: the address step and the credentials step both
+warn that everything relayed to that panel crosses the network in clear, and suggest an API key
+over a password. Set `ALLOW_INSECURE_DOKPLOY=false` to refuse such panels outright. An address
+typed without a scheme is still tried over https first, and only falls back to http when nothing
+answers, so a working https panel is never downgraded.
 
 ## Credentials are relayed once
 

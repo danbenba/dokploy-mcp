@@ -12,19 +12,12 @@ export interface NavItem {
 }
 
 interface SatelliteHeaderProps {
-  /** Short badge next to the wordmark: which site this is. */
   tag: string
   nav: NavItem[]
-  /** Supplied by sites that have a sidebar to fold away on small screens. */
   menu?: { open: boolean; onToggle: () => void }
-  /** Must match the width the page content uses, or the header sits out of line with it. */
   width?: ContainerWidth
 }
 
-/**
- * The landing page's header, for the sites that orbit it: same height, same border, same blur,
- * same wordmark. Only the badge and the links change.
- */
 export function SatelliteHeader({ tag, nav, menu, width }: SatelliteHeaderProps) {
   return (
     <header className="sticky top-0 z-30 border-b bg-background/80 backdrop-blur">

@@ -29,13 +29,13 @@ export interface FlowState {
   client: { name: string }
   locked_instance: string | null
   requires_https: boolean
-  instance: { url: string; host: string | null } | null
+  instance: { url: string; host: string | null; insecure: boolean } | null
   account: FlowAccount | null
   method: 'credentials' | 'api_key' | null
   two_factor_pending: boolean
   requested_scopes: string[]
   scope_catalog: ScopeDefinition[]
-  verified?: { url: string; host: string; is_cloud: boolean }
+  verified?: { url: string; host: string; is_cloud: boolean; insecure: boolean }
 }
 
 export class ApiError extends Error {

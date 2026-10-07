@@ -42,8 +42,8 @@ guards, the login flow API and the MCP endpoint including scope filtering.
 To exercise the whole flow without a real panel, run a stub that answers the handful of endpoints
 the flow touches (`/api/health`, `/api/settings.isCloud`, `/api/auth/sign-in/email`,
 `/api/auth/get-session`, `/api/organization.all`, `/api/user.createApiKey`) and set
-`ALLOW_PRIVATE_NETWORKS=true` plus `ALLOW_INSECURE_DOKPLOY=true` in `apps/api/.env`. Set them back
-to `false` before committing: they disable the SSRF guard.
+`ALLOW_PRIVATE_NETWORKS=true` in `apps/api/.env`. Set it back to `false` before committing: it
+disables the SSRF guard.
 
 ## Regenerating the Dokploy endpoint catalog
 

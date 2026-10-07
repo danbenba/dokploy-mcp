@@ -62,9 +62,17 @@ function presentFlow(flow: FlowPayload, token: string) {
     locked_instance: config.lockedDokployUrl,
     requires_https: !config.allowInsecureDokploy,
     instance: flow.pendingUrl
-      ? { url: flow.pendingUrl, host: flow.pendingHost ?? null }
+      ? {
+          url: flow.pendingUrl,
+          host: flow.pendingHost ?? null,
+          insecure: flow.pendingInsecure ?? new URL(flow.pendingUrl).protocol === 'http:',
+        }
       : config.lockedDokployUrl
-        ? { url: config.lockedDokployUrl, host: new URL(config.lockedDokployUrl).hostname }
+        ? {
+            url: config.lockedDokployUrl,
+            host: new URL(config.lockedDokployUrl).hostname,
+            insecure: new URL(config.lockedDokployUrl).protocol === 'http:',
+          }
         : null,
     account: flow.auth?.account ?? null,
     method: flow.auth?.method ?? null,
@@ -124,13 +132,19 @@ export default class FlowController {
       ...flow,
       pendingUrl: instance.url,
       pendingHost: instance.host,
+      pendingInsecure: instance.insecure,
       pendingCookies: undefined,
       auth: undefined,
     }
     const persisted = await this.persist(next)
     return response.json({
       ...presentFlow(persisted.flow, persisted.token),
-      verified: { url: instance.url, host: instance.host, is_cloud: instance.isCloud },
+      verified: {
+        url: instance.url,
+        host: instance.host,
+        is_cloud: instance.isCloud,
+        insecure: instance.insecure,
+      },
     })
   }
 

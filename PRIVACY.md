@@ -140,8 +140,10 @@ French supervisory authority, at [cnil.fr](https://www.cnil.fr).
 - Panel addresses are verified before any credential is sent: DNS resolution, a guard against
   private and loopback addresses to prevent server-side request forgery, then two probes that
   confirm the host really is a Dokploy panel.
-- Everything travels over TLS. Plain-HTTP panels are refused unless the operator explicitly
-  disables that guard on a self-hosted install.
+- Traffic to this service always travels over TLS. The link to **your** panel is whatever you
+  gave it: a `http://` address is accepted, so that a panel without a certificate can still be
+  reached, and both screens that carry a credential say plainly that it will cross the network
+  unencrypted. An operator can forbid it outright with `ALLOW_INSECURE_DOKPLOY=false`.
 - Tokens are encrypted, not merely signed. Authorization codes are single-use and refresh tokens
   rotate on every use.
 - Permissions are enforced twice: tools outside the scopes you granted are not even listed to the

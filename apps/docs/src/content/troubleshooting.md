@@ -123,7 +123,8 @@ schemas and `dokploy_api` calls any of them — `read` covers GET, `admin` is ne
 ## Sign-in is refused before the password
 
 The address you typed did not pass verification: it did not resolve, it resolved to a private or
-loopback address, it is plain HTTP, or it does not answer like a Dokploy panel.
+loopback address, or it does not answer like a Dokploy panel. Plain `http://` is accepted unless
+the operator set `ALLOW_INSECURE_DOKPLOY=false`.
 
 A panel on a private address is the normal case for this message. Use the
 [npm package](/npm-package), which runs on a machine that can already reach it, rather than asking

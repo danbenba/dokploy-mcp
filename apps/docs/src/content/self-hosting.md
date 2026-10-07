@@ -46,7 +46,7 @@ clients refuse a plain-HTTP authorization server.
 | `FLOW_SESSION_TTL` | `900` | Sign-in flow lifetime, in seconds |
 | `DOKPLOY_LOCKED_URL` | unset | Restrict the deployment to a single panel |
 | `ALLOW_PRIVATE_NETWORKS` | `false` | Allow panels on private and loopback addresses |
-| `ALLOW_INSECURE_DOKPLOY` | `false` | Allow plain-HTTP panels |
+| `ALLOW_INSECURE_DOKPLOY` | `true` | Accept panels reached over plain HTTP |
 | `LOG_LEVEL` | `info` | pino log level |
 
 The compose file ships tighter production values than the development defaults above:
@@ -64,10 +64,13 @@ DOKPLOY_LOCKED_URL=https://panel.example.com
 
 ### The two guards
 
-`ALLOW_PRIVATE_NETWORKS` and `ALLOW_INSECURE_DOKPLOY` exist for local development. They disable the
-checks that stop the server from being pointed at a private address or a plain-HTTP host, which is
-exactly the shape of a server-side request forgery. Keep both `false` anywhere a stranger can reach
-the sign-in form.
+`ALLOW_PRIVATE_NETWORKS` exists for local development. It disables the check that stops the server
+from being pointed at a private address, which is exactly the shape of a server-side request
+forgery. Keep it `false` anywhere a stranger can reach the sign-in form.
+
+`ALLOW_INSECURE_DOKPLOY` is the opposite: it defaults to `true`, so a panel without a certificate
+works out of the box, and the sign-in screens warn that credentials cross the network in clear. Set
+it to `false` to accept https panels only.
 
 If your panel genuinely sits on a private address, the [npm package](/npm-package) is the better
 answer: it runs on a machine that can already reach it.

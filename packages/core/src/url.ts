@@ -1,3 +1,7 @@
+export function hasExplicitScheme(input: string): boolean {
+  return /^https?:\/\//i.test(input.trim())
+}
+
 export function normalizeBaseUrl(input: string): string {
   let candidate = input.trim()
   if (!/^https?:\/\//i.test(candidate)) {
