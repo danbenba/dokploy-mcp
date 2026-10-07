@@ -6,6 +6,16 @@ ChatGPT operate the [Dokploy](https://dokploy.com) panel you host yourself.
 Ask for a deployment, a database, a domain or the reason a build failed, in your own words. The
 assistant works through Dokploy's own HTTP API, with the permissions you granted and nothing more.
 
+<p align="center">
+  <a href="https://dokploy.rest">
+    <img
+      src=".github/assets/dokploy-mcp-demo.webp"
+      alt="A real Claude Code session: one sentence creates a project, deploys the nginxdemos/hello image with a test domain, then diagnoses a 502 as a wrong port and fixes it."
+      width="900"
+    >
+  </a>
+</p>
+
 Full documentation: **[docs.dokploy.rest](https://docs.dokploy.rest)**.
 
 > Work in progress. The interfaces described here already run, but they may still change.
