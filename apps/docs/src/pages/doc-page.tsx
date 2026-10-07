@@ -25,8 +25,6 @@ function useDocumentMeta(page: DocPageData) {
 
 export function DocPage({ page }: { page: DocPageData }) {
   const navigate = useNavigate()
-  // Sections only: this card stands in for the outline rail on screens too narrow to show it,
-  // where a full heading list would push the page itself below the fold.
   const sections = outline(page.markdown).filter((heading) => heading.depth === 2)
   const { previous, next } = neighbours(page.slug)
 

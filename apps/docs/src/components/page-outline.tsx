@@ -2,16 +2,8 @@ import { useEffect, useState } from 'react'
 import { cn } from '@/lib/utils'
 import type { Heading } from '@/lib/markdown'
 
-/** Matches the heading scroll-margin, so a heading counts as current once it reaches the header. */
 const ACTIVE_OFFSET = 96
 
-/**
- * The "On this page" rail, with the section you are reading highlighted.
- *
- * The current heading is the last one whose top has passed the offset, read straight from
- * getBoundingClientRect on each scroll. An IntersectionObserver would need a rootMargin band that
- * reports nothing at all for a section taller than the viewport, which is most of them here.
- */
 export function PageOutline({ headings }: { headings: Heading[] }) {
   const [activeId, setActiveId] = useState<string | undefined>(headings[0]?.id)
 
@@ -35,7 +27,6 @@ export function PageOutline({ headings }: { headings: Heading[] }) {
           break
         }
       }
-      // The last section is often too short to reach the offset; at the bottom it is the answer.
       if (window.scrollY + window.innerHeight >= document.body.scrollHeight - 2) {
         current = headings[headings.length - 1].id
       }

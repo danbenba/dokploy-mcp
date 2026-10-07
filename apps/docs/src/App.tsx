@@ -49,9 +49,6 @@ function Shell() {
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
 
-  // The outline lives in its own column, outside the routed element, so it reads the slug from
-  // the path rather than from route params. The router tolerates a trailing slash, so this has to
-  // as well, or '/tools/' renders the page with no outline beside it.
   const headings = useMemo(() => {
     const page = findPage(location.pathname.replace(/^\/+|\/+$/g, ''))
     return page ? outline(page.markdown) : []
@@ -64,7 +61,6 @@ function Shell() {
     }
   }, [location.pathname, location.hash])
 
-  // Resolved after the Markdown body has been rendered into the DOM.
   useEffect(() => {
     if (!location.hash) {
       return

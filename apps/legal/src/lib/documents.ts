@@ -7,17 +7,11 @@ export interface LegalDocument {
   nav: string
   title: string
   description: string
-  /** Shown under the title: the "Last updated" line of the source, when it has one. */
   subtitle?: string
   mode: 'markdown' | 'verbatim'
   body: string
 }
 
-/**
- * Splits a leading `# Title` and a following `**Last updated: …**` line off a Markdown document,
- * so the page header can carry them in the landing page's own hero typography instead of leaving
- * them inside the prose.
- */
 function split(source: string): { title?: string; subtitle?: string; body: string } {
   const lines = source.replace(/^﻿/, '').split('\n')
   let index = 0

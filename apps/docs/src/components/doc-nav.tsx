@@ -2,14 +2,6 @@ import { NavLink } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import { groups } from '~/lib/nav'
 
-/**
- * The page list.
- *
- * Nothing here uses a negative margin: the links are padded and the group labels share that
- * padding, so the active pill lines up with the headings above it without ever being wider than
- * the column. A link wider than its scroll container is what puts a horizontal scrollbar across
- * the bottom of the sidebar.
- */
 export function DocNav({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <nav aria-label="Documentation" className="text-sm">

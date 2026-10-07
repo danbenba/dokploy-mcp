@@ -3,20 +3,9 @@ import { render } from '@/lib/markdown'
 
 interface ProseArticleProps {
   markdown: string
-  /**
-   * Called for a click on a link to a path on this site, so the host can route it client-side
-   * instead of reloading the page. Left out, such links behave like ordinary ones.
-   */
   onInternalLink?: (href: string) => void
 }
 
-/**
- * Renders a Markdown document and gives every code block its own copy button.
- *
- * The button is attached to the DOM rather than composed in JSX because the body of a page is one
- * HTML string produced from Markdown at build time; injecting a node is simpler and cheaper than
- * hydrating the whole tree into components.
- */
 export function ProseArticle({ markdown, onInternalLink }: ProseArticleProps) {
   const html = useMemo(() => render(markdown), [markdown])
   const root = useRef<HTMLDivElement>(null)
@@ -82,7 +71,6 @@ export function ProseArticle({ markdown, onInternalLink }: ProseArticleProps) {
       }
       const anchor = (event.target as Element | null)?.closest('a')
       const href = anchor?.getAttribute('href')
-      // Only site-relative paths; '#anchor', 'mailto:' and absolute URLs keep native behaviour.
       if (!href || !href.startsWith('/')) {
         return
       }
@@ -98,7 +86,6 @@ export function ProseArticle({ markdown, onInternalLink }: ProseArticleProps) {
     <div
       ref={root}
       className="site-prose"
-      // The source is Markdown committed to this repository, never user input.
       dangerouslySetInnerHTML={{ __html: html }}
     />
   )

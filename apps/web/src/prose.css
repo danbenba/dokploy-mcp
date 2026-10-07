@@ -1,6 +1,3 @@
-/* Long-form prose for the documentation and legal sites, written in the landing page's own
-   vocabulary: semibold tracking-tight headings, muted body copy, bordered muted code surfaces.
-   It lives here, next to the tokens it builds on, so both satellite sites share one copy. */
 @layer components {
   .site-prose {
     @apply text-base text-muted-foreground;
@@ -105,7 +102,6 @@
   }
 }
 
-/* Legal texts that must be reproduced exactly: the Apache license and the NOTICE file. */
 @layer components {
   .site-verbatim {
     @apply overflow-x-auto rounded-xl border bg-muted/40 p-5 font-mono text-[0.75rem] leading-relaxed whitespace-pre text-muted-foreground;
@@ -113,8 +109,6 @@
   }
 }
 
-/* Sticky sidebar and outline rails: they scroll on their own, so their scrollbar should be thin
-   and quiet rather than a full-width bar across the column. */
 @layer components {
   .site-rail {
     @apply sticky top-14 max-h-[calc(100dvh-3.5rem)] overflow-x-hidden overflow-y-auto py-10;

@@ -17,10 +17,6 @@ export interface FooterColumn {
   items: NavItem[]
 }
 
-/**
- * The landing page's footer, for the docs and legal sites: same four-column grid, same bottom bar.
- * Callers supply the first two link columns; the project column is the same everywhere.
- */
 export function SatelliteFooter({
   columns,
   width,
